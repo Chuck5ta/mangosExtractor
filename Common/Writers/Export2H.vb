@@ -23,7 +23,7 @@ Namespace Core
             Dim intMaxRows As Integer = DBCDataTable.Rows.Count() - 1
             Dim intMaxCols As Integer = DBCDataTable.Columns.Count() - 1
 
-            Dim sqlWriter As New StreamWriter(Filename.Substring(0, Filename.Length - 4) & "fmt.h")
+            Dim sqlWriter As New StreamWriter(Filename.Substring(0, Filename.Length - 4).Replace("_", "") & "Entryfmt.h")
 
             Dim sqlWriter2 As New StreamWriter(Filename.Substring(0, Filename.Length - 4) & "Entry.h")
             'sqlWriter = sqlReader.ReadToEnd()
@@ -121,8 +121,8 @@ Namespace Core
         ''' <param name="tablename"></param>
         ''' <remarks></remarks>
         Private Sub WriteHStructure(sqlWriter As StreamWriter, sqlWriter2 As StreamWriter, data As DataTable, tablename As String, ByRef sourceFolder As String)
-            sqlWriter.Write("const char {0}[]= " & Chr(34), tablename & "fmt")
-            sqlWriter2.WriteLine("struct AchievementEntry")
+            sqlWriter.Write("const char {0}[]= " & Chr(34), tablename & "Entryfmt")
+            sqlWriter2.WriteLine("struct " & tablename & "Entry")
             sqlWriter2.WriteLine("{")
 
             'Needs to write out files in this format:
