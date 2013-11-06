@@ -3,6 +3,7 @@ Imports System.Text
 'Imports MpqLib
 Imports System.Data
 Imports System.Reflection
+Imports System.Linq.Expressions
 
 
 Namespace Core
@@ -11,6 +12,7 @@ Namespace Core
         Private m_BuildNo As Integer
         Private m_MajorVersion As Integer
         Private m_FullVersion As String
+        Public ReadOnly MaNGOSExtractorVersion As String = "v1.45"
 
         Property BuildNo As Integer
             Get
@@ -77,15 +79,15 @@ Namespace Core
         ''' <value></value>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Property alertlist As Listbox
+        Public Property alertlist As ListBox
             Get
                 Return m_alertlist
             End Get
-            Set(value As Listbox)
+            Set(value As ListBox)
                 m_alertlist = value
             End Set
         End Property
-        Private m_alertlist As Listbox
+        Private m_alertlist As ListBox
 
         Public Sub ReadWarcraftExe(ByRef Filename As String)
             Try
@@ -106,11 +108,11 @@ Namespace Core
         ''' <param name="StartFolder"></param>
         ''' <param name="FolderList"></param>
         ''' <remarks></remarks>
-        Public Function ReadFolders(ByRef StartFolder As System.IO.DirectoryInfo, ByRef FolderList As Collection) As String
+        Public Function ReadFolders(ByRef StartFolder As DirectoryInfo, ByRef FolderList As Collection) As String
             Dim sbOutput As New StringBuilder
-            If System.IO.Directory.Exists(StartFolder.FullName) = True Then
+            If Directory.Exists(StartFolder.FullName) = True Then
                 Try
-                    For Each thisFolder As System.IO.DirectoryInfo In StartFolder.GetDirectories()
+                    For Each thisFolder As DirectoryInfo In StartFolder.GetDirectories()
                         Try
                             'Skip the cache and updates folders if they exist
                             If thisFolder.FullName.ToLower.Contains("cache") = False And thisFolder.FullName.ToLower.Contains("updates") = False Then
@@ -144,7 +146,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function ExtractDBCFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
             Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As System.Collections.Generic.IEnumerable(Of MpqLib.Mpq.CFileInfo)
+            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
@@ -157,7 +159,7 @@ Namespace Core
                 'Process each file found
                 For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
 #If _MyType <> "Console" Then
-                    Application.doevents()
+                    Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If
@@ -238,7 +240,7 @@ Namespace Core
 
                             'Copy the patch to .new
                             If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
-                                System.IO.File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
+                                File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
                             End If
 
 
@@ -266,9 +268,9 @@ Namespace Core
                             'End If
                         End If
                     End If
-                    '                    Core.exportSQL(DestinationFolder & strSubFolder & "\" & strOriginalName)
+                    '                    exportSQL(DestinationFolder & strSubFolder & "\" & strOriginalName)
 #If _MyType <> "Console" Then
-                    Application.doevents()
+                    Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If
@@ -288,7 +290,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function ExtractADTFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
             Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As System.Collections.Generic.IEnumerable(Of MpqLib.Mpq.CFileInfo)
+            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
@@ -390,7 +392,7 @@ Namespace Core
 
                                 'Copy the patch to .new
                                 If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
-                                    System.IO.File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
+                                    File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
                                 End If
 
 
@@ -434,7 +436,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function ExtractWDTFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
             Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As System.Collections.Generic.IEnumerable(Of MpqLib.Mpq.CFileInfo)
+            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
@@ -536,7 +538,7 @@ Namespace Core
 
                                 'Copy the patch to .new
                                 If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
-                                    System.IO.File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
+                                    File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
                                 End If
 
 
@@ -580,7 +582,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function ExtractFilesGeneric(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
             Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As System.Collections.Generic.IEnumerable(Of MpqLib.Mpq.CFileInfo)
+            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
@@ -590,7 +592,7 @@ Namespace Core
 
                 For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
 #If _MyType <> "Console" Then
-                    Application.doevents()
+                    Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If
@@ -608,11 +610,11 @@ Namespace Core
                         My.Computer.FileSystem.DeleteFile(DestinationFolder & "\" & thisFile.FileName)
                     End If
 
-                    Alert(thisFile.FileName, Core.MaNGOSExtractorCore.AlertNewLine.AddCRLF)
+                    Alert(thisFile.FileName, AlertNewLine.AddCRLF)
 
                     Archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
 #If _MyType <> "Console" Then
-                    Application.doevents()
+                    Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If
@@ -707,7 +709,7 @@ Namespace Core
 
             If intMaxcols > 0 Then
                 For cols As Integer = 0 To intMaxcols Step 4
-                    dbcDataTable.Columns.Add("Col" & (cols / 4).ToString(), GetType(String))
+                    dbcDataTable.Columns.Add("ErrUnknown" & (cols / 4).ToString(), GetType(String))
 #If _MyType <> "Console" Then
                     Application.DoEvents()
 #Else
@@ -727,13 +729,13 @@ Namespace Core
                     Dim strValuecounter As String = "0%---------50%--------100%"
                     Dim intblockcountersize As Integer = strValuecounter.Length()
                     If intMaxRows > 0 Then
-                        Alert("", Core.AlertNewLine.AddCRLF)
-                        Alert("         Loading DBC into memory " & strValuecounter & " Records: " & intMaxRows, Core.AlertNewLine.AddCRLF)
-                        Alert("", Core.AlertNewLine.AddCRLF)
-                        Alert("                                 ", Core.AlertNewLine.NoCRLF)
+                        Alert("", AlertNewLine.AddCRLF)
+                        Alert("         Loading DBC into memory " & strValuecounter & " Records: " & intMaxRows, AlertNewLine.AddCRLF)
+                        Alert("", AlertNewLine.AddCRLF)
+                        Alert("                                 ", AlertNewLine.NoCRLF)
                     Else
-                        Alert("         Loading DBC into memory " & strValuecounter & " Records: 0", Core.AlertNewLine.AddCRLF)
-                        Alert("", Core.AlertNewLine.AddCRLF)
+                        Alert("         Loading DBC into memory " & strValuecounter & " Records: 0", AlertNewLine.AddCRLF)
+                        Alert("", AlertNewLine.AddCRLF)
                     End If
 
                     For rows As Integer = 0 To intMaxRows
@@ -744,7 +746,7 @@ Namespace Core
 #End If
                         If CInt(intMaxRows / intblockcountersize) > 4 Then
                             If rows Mod CInt(intMaxRows / intblockcountersize) = 0 Then
-                                Alert(".", Core.AlertNewLine.NoCRLF)
+                                Alert(".", AlertNewLine.NoCRLF)
                             End If
                         End If
 
@@ -782,10 +784,10 @@ Namespace Core
                         dbcDataTable.Rows.Add(thisRow)
                     Next
                 Else 'Empty file
-                    Alert("", Core.AlertNewLine.AddCRLF)
+                    Alert("", AlertNewLine.AddCRLF)
                 End If
 
-                Alert("", Core.AlertNewLine.AddCRLF)
+                Alert("", AlertNewLine.AddCRLF)
                 'Create a new row at the end to store the datatype
                 If intMaxRows > 0 Then
                     thisRow = dbcDataTable.NewRow()
@@ -795,9 +797,9 @@ Namespace Core
                     Dim strValuecounter As String = "0%---------50%--------100%"
                     Dim intblockcountersize As Integer = strValuecounter.Length()
                     'If CInt(Fix(TotalRows / 4) / intblockcountersize) > 0 Then
-                    Alert("   Determining Column Data Types " & strValuecounter & " Cols: " & dbcDataTable.Columns.Count() - 1, Core.AlertNewLine.AddCRLF)
-                    Alert("", Core.AlertNewLine.AddCRLF)
-                    Alert("                                 ", Core.AlertNewLine.NoCRLF)
+                    Alert("   Determining Column Data Types " & strValuecounter & " Cols: " & dbcDataTable.Columns.Count() - 1, AlertNewLine.AddCRLF)
+                    Alert("", AlertNewLine.AddCRLF)
+                    Alert("                                 ", AlertNewLine.NoCRLF)
                     'End If
                     Dim totalCols As Integer = dbcDataTable.Columns.Count() - 1
                     For cols As Integer = 0 To totalCols 'TotalRows Step 4
@@ -809,18 +811,18 @@ Namespace Core
                         If CInt((totalCols / intblockcountersize)) > 0 Then
                             If cols Mod CInt((totalCols / intblockcountersize)) = 0 Then
 
-                                Alert(".", Core.AlertNewLine.NoCRLF)
+                                Alert(".", AlertNewLine.NoCRLF)
 
                             End If
                         Else
                             If (cols + 1) Mod CInt((intblockcountersize / (cols + 1))) = 0 Then
 
-                                Alert(".", Core.AlertNewLine.NoCRLF)
+                                Alert(".", AlertNewLine.NoCRLF)
 
                             End If
                         End If
                         '                Catch ex As Exception
-                        '    Core.Alert("Error: " & ex.Message, MaNGOSExtractorCore.runningAsGui)
+                        '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
 
                         'End Try
 
@@ -850,7 +852,7 @@ Namespace Core
                                         Case "3"
                                             strDataType = "Float"
                                     End Select
-                                    strDataType = Core.getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
+                                    strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
                                     'Try
                                     If strDataType = "Int32" Then 'Integer
                                         dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
@@ -862,7 +864,7 @@ Namespace Core
                                         dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
                                     End If
                                     'Catch ex As Exception
-                                    '    Core.Alert("Error: " & ex.Message, MaNGOSExtractorCore.runningAsGui)
+                                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
                                     'End Try
                                 End If
                             End If
@@ -873,7 +875,7 @@ Namespace Core
 #End If
                         Next
                         'Catch ex As Exception
-                        '    Core.Alert("Error: " & ex.Message, MaNGOSExtractorCore.runningAsGui)
+                        '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
                         'End Try
 
                         If blnFoundString = True And m_reader.StringTableSize > 0 Then
@@ -913,15 +915,15 @@ Namespace Core
                     Next
 
                     'Catch ex As Exception
-                    '    Core.Alert("Error: " & ex.Message, MaNGOSExtractorCore.runningAsGui)
+                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
                     'End Try
                 End If
-                Alert("", Core.AlertNewLine.AddCRLF)
+                Alert("", AlertNewLine.AddCRLF)
             Else 'No Rows
-                Alert("", Core.AlertNewLine.AddCRLF)
+                Alert("", AlertNewLine.AddCRLF)
             End If
             'Catch ex As Exception
-            '    Core.Alert("Error: " & ex.Message, MaNGOSExtractorCore.runningAsGui)
+            '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
             'End Try
 
             Return dbcDataTable
@@ -958,28 +960,28 @@ Namespace Core
         Public Sub Alert(ByRef AlertMessage As String, ByRef LineEnding As AlertNewLine)
             If m_runningAsGui = True Then 'running as a Gui App
 
-                If Not IsNothing(Core.alertlist) Then
+                If Not IsNothing(alertlist) Then
                     If LineEnding = AlertNewLine.AddCRLF Then
 #If _MyType <> "Console" Then
-                        Core.alertlist.Items.Add(AlertMessage)
+                        alertlist.Items.Add(AlertMessage)
 #Else
-                        Core.alertlist.Items.Add(AlertMessage, AlertMessage)
+                        alertlist.Items.Add(AlertMessage, AlertMessage)
 #End If
-                        Core.alertlist.SelectedIndex = Core.alertlist.Items.Count() - 1
-                        Core.alertlist.SelectedIndex = -1
+                        alertlist.SelectedIndex = alertlist.Items.Count() - 1
+                        alertlist.SelectedIndex = -1
                     Else
-                        Dim Temp As String = Core.alertlist.Items(Core.alertlist.Items.Count() - 1)
+                        Dim Temp As String = alertlist.Items(alertlist.Items.Count() - 1)
                         AlertMessage = Temp & AlertMessage
 
 
-                        Core.alertlist.Items.RemoveAt(Core.alertlist.Items.Count() - 1)
+                        alertlist.Items.RemoveAt(alertlist.Items.Count() - 1)
 #If _MyType <> "Console" Then
-                        Core.alertlist.Items.Add(AlertMessage)
+                        alertlist.Items.Add(AlertMessage)
 #Else
-                        Core.alertlist.Items.Add(AlertMessage, AlertMessage)
+                        alertlist.Items.Add(AlertMessage, AlertMessage)
 #End If
-                        Core.alertlist.SelectedIndex = Core.alertlist.Items.Count() - 1
-                        Core.alertlist.SelectedIndex = -1
+                        alertlist.SelectedIndex = alertlist.Items.Count() - 1
+                        alertlist.SelectedIndex = -1
                     End If
                 End If
             Else 'Running as console
@@ -1006,13 +1008,13 @@ Namespace Core
             If My.Computer.FileSystem.DirectoryExists(OutputFolder & "DBFilesClient\") = False Then
                 Directory.CreateDirectory(OutputFolder & "DBFilesClient\")
             End If
-            Dim myFolders As System.IO.DirectoryInfo
-            myFolders = New System.IO.DirectoryInfo(OutputFolder & "\DBFilesClient")
+            Dim myFolders As DirectoryInfo
+            myFolders = New DirectoryInfo(OutputFolder & "\DBFilesClient")
 
-            Dim Files() As System.IO.FileInfo = myFolders.GetFiles("*.DB?")
+            Dim Files() As FileInfo = myFolders.GetFiles("*.DB?")
             Dim FilelistSorted As New SortedList()
 
-            For Each thisFile As System.IO.FileInfo In Files
+            For Each thisFile As FileInfo In Files
                 FilelistSorted.Add(thisFile.Name, thisFile.Name)
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -1021,7 +1023,7 @@ Namespace Core
 #End If
             Next
 
-            ' For Each file As System.IO.FileInfo In Files 'myFolders.GetFiles("*.DB?")
+            ' For Each file As FileInfo In Files 'myFolders.GetFiles("*.DB?")
             For Each fileItem As DictionaryEntry In FilelistSorted 'myFolders.GetFiles("*.DB?")
                 Dim dbcDataTable As New DataTable
 #If _MyType <> "Console" Then
@@ -1029,45 +1031,45 @@ Namespace Core
 #End If
                 'Load the entire DBC into a DataTable to be processed by all exports
                 If ExportCSV = True Or ExportSQL = True Or ExportXML = True Or ExportMD = True Or ExportH = True Then
-                    Alert("", Core.AlertNewLine.AddCRLF)
-                    Alert(fileItem.Value, Core.AlertNewLine.NoCRLF)
+                    Alert("", AlertNewLine.AddCRLF)
+                    Alert(fileItem.Value, AlertNewLine.NoCRLF)
                     dbcDataTable = loadDBCtoDataTable(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value)
                 End If
 
                 'Export to SQL Files
                 If ExportSQL = True Then
-                    Alert("Creating SQL for " & fileItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Creating SQL for " & fileItem.Value, AlertNewLine.AddCRLF)
                     Core.exportSQL(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
-                    Alert("", Core.AlertNewLine.NoCRLF)
+                    Alert("", AlertNewLine.NoCRLF)
                 End If
 
                 'Export to h Files
                 If ExportH = True Then
-                    Alert("Creating .h for " & fileItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Creating .h for " & fileItem.Value, AlertNewLine.AddCRLF)
                     Core.exportH(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
-                    Alert("", Core.AlertNewLine.NoCRLF)
+                    Alert("", AlertNewLine.NoCRLF)
                 End If
 
 
                 'Export to CSV
                 If ExportCSV = True Then
-                    Alert("Creating CSV for " & fileItem.Value, Core.AlertNewLine.AddCRLF)
-                    Core.exportCSV(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
-                    Alert("", Core.AlertNewLine.NoCRLF)
+                    Alert("Creating CSV for " & fileItem.Value, AlertNewLine.AddCRLF)
+                    Core.exportCSV(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
+                    Alert("", AlertNewLine.NoCRLF)
                 End If
 
                 'Export to XML
                 If ExportXML = True Then
-                    Alert("Creating XML for " & fileItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Creating XML for " & fileItem.Value, AlertNewLine.AddCRLF)
                     Core.exportXML(BaseFolder, OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
-                    Alert("", Core.AlertNewLine.NoCRLF)
+                    Alert("", AlertNewLine.NoCRLF)
                 End If
 
                 'Export to git MD Files
                 If ExportMD = True Then
-                    Alert("Creating MD for " & fileItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Creating MD for " & fileItem.Value, AlertNewLine.AddCRLF)
                     Core.exportMD(BaseFolder, OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
-                    Alert("", Core.AlertNewLine.NoCRLF)
+                    Alert("", AlertNewLine.NoCRLF)
                 End If
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -1085,7 +1087,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function returnDBCXMLfilename() As String
             Dim XMLFilename As String = ""
-            Select Case Core.MajorVersion
+            Select Case MajorVersion
                 Case "1"
                     XMLFilename = "dbc_classic.xml"
                 Case "2"
@@ -1107,7 +1109,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Function returnMangosCoreVersion() As String
             Dim XMLFilename As String = ""
-            Select Case Core.MajorVersion
+            Select Case MajorVersion
                 Case "1"
                     XMLFilename = "MaNGOSZero"
                 Case "2"
@@ -1137,7 +1139,7 @@ Namespace Core
 
             If My.Computer.FileSystem.FileExists(sourceFolder & "\" & XMLFilename) = True Then
                 myXMLDoc.Load(sourceFolder & "\" & XMLFilename)
-                ' Alert(" External XML Definitions used", Core.AlertNewLine.AddCRLF)
+                ' Alert(" External XML Definitions used", AlertNewLine.AddCRLF)
             Else
                 Dim _textStreamReader As StreamReader
                 Dim _assembly As [Assembly]
@@ -1145,7 +1147,7 @@ Namespace Core
                     _assembly = [Assembly].GetExecutingAssembly()
                     _textStreamReader = New StreamReader(_assembly.GetManifestResourceStream(_assembly.GetName.Name.ToString() & "." & XMLFilename))
                     myXMLDoc.Load(_textStreamReader)
-                    'Alert(" Internal XML Definitions used", Core.AlertNewLine.AddCRLF)
+                    'Alert(" Internal XML Definitions used", AlertNewLine.AddCRLF)
                 Catch ex As Exception
                 End Try
             End If
@@ -1171,7 +1173,11 @@ Namespace Core
                         If Not IsNothing(thisFieldNode) Then
                             thisCollection.Add(thisCol, thisFieldNode.Attributes.GetNamedItem("name").InnerText)
                         End If
-                        thisFieldNode = thisFieldNode.NextSibling
+                        Try
+                            thisFieldNode = thisFieldNode.NextSibling
+                        Catch ex As Exception
+                        End Try
+
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else

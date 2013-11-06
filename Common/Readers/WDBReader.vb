@@ -79,7 +79,7 @@ Namespace FileReader
         End Property
 
         Public Sub New(fileName As String)
-            Using reader = BinaryReaderExtensions.FromFile(fileName)
+            Using reader = FromFile(fileName)
                 If reader.BaseStream.Length < HeaderSize Then
                     Throw New InvalidDataException([String].Format("File {0} is corrupted!", fileName))
                 End If
@@ -90,11 +90,11 @@ Namespace FileReader
                     Throw New InvalidDataException([String].Format("File {0} isn't valid WDB file!", fileName))
                 End If
 
-                Dim build As UInteger = reader.ReadUInt32()
-                Dim locale As UInteger = reader.ReadUInt32()
-                Dim unk1 = reader.ReadInt32()
-                Dim unk2 = reader.ReadInt32()
-                Dim version = reader.ReadInt32()
+                'Dim build As UInteger = reader.ReadUInt32()
+                'Dim locale As UInteger = reader.ReadUInt32()
+                'Dim unk1 = reader.ReadInt32()
+                'Dim unk2 = reader.ReadInt32()
+                'Dim version = reader.ReadInt32()
 
                 m_rows = New Dictionary(Of Integer, Byte())()
 

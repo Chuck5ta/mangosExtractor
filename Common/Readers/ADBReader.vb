@@ -6,7 +6,7 @@ Namespace FileReader
     Class ADBReader
         Implements IWowClientDBReader
         Private Const HeaderSize As Integer = 48
-        Private Const ADBFmtSig As UInteger = &H32484357
+        Private Const AdbFmtSig As UInteger = &H32484357
         ' WCH2
         ReadOnly Property RecordsCount() As Integer Implements IWowClientDBReader.RecordsCount
             Get
@@ -68,7 +68,7 @@ Namespace FileReader
         End Property
 
         Public Sub New(fileName As String)
-            Using reader = BinaryReaderExtensions.FromFile(fileName)
+            Using reader = FromFile(fileName)
                 If reader.BaseStream.Length < HeaderSize Then
                     Throw New InvalidDataException([String].Format("File {0} is corrupted!", fileName))
                 End If

@@ -66,7 +66,7 @@ Public Module BinaryReaderExtensions
     ''' <summary>
     '''  Reads the packed guid from the current stream and advances the current position of the stream by packed guid size.
     ''' </summary>
-    <System.Runtime.CompilerServices.Extension> _
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadPackedGuid(reader As BinaryReader) As ULong
         Dim res As ULong = 0
         Dim mask As Byte = reader.ReadByte()
@@ -88,11 +88,13 @@ Public Module BinaryReaderExtensions
 #End Region
 
 #Region "ReadStringNumber"
+
     ''' <summary>
-    '''  Reads the string with known length from the current stream and advances the current position of the stream by string length.
-    ''' <seealso cref="GenericReader.ReadStringNull"/>
+    ''' Reads the string number.
     ''' </summary>
-    <System.Runtime.CompilerServices.Extension> _
+    ''' <param name="reader">The reader.</param>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadStringNumber(reader As BinaryReader) As String
         Dim text As String = [String].Empty
         Dim num As UInteger = reader.ReadUInt32()
@@ -105,15 +107,17 @@ Public Module BinaryReaderExtensions
 #End Region
 
 #Region "ReadStringNull"
+
     ''' <summary>
-    '''  Reads the NULL terminated string from the current stream and advances the current position of the stream by string length + 1.
-    ''' <seealso cref="GenericReader.ReadStringNumber"/>
+    ''' Reads the string null.
     ''' </summary>
-    <System.Runtime.CompilerServices.Extension> _
+    ''' <param name="reader">The reader.</param>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadStringNull(reader As BinaryReader) As String
         Dim num As Byte
         Dim text As String = [String].Empty
-        Dim temp As New System.Collections.Generic.List(Of Byte)()
+        Dim temp As New List(Of Byte)()
 
         While (InlineAssignHelper(num, reader.ReadByte())) <> 0
             temp.Add(num)
@@ -129,7 +133,7 @@ Public Module BinaryReaderExtensions
     ''' <summary>
     '''  Reads the object coordinates from the current stream and advances the current position of the stream by 12 bytes.
     ''' </summary>
-    <System.Runtime.CompilerServices.Extension> _
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadCoords3(reader As BinaryReader) As Coords3
         Dim v As Coords3
 
@@ -145,7 +149,7 @@ Public Module BinaryReaderExtensions
     ''' <summary>
     '''  Reads the object coordinates and orientation from the current stream and advances the current position of the stream by 16 bytes.
     ''' </summary>
-    <System.Runtime.CompilerServices.Extension> _
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadCoords4(reader As BinaryReader) As Coords4
         Dim v As Coords4
 
@@ -165,7 +169,7 @@ Public Module BinaryReaderExtensions
     ''' <typeparam name="T"></typeparam>
     ''' <param name="reader"></param>
     ''' <returns></returns>
-    <System.Runtime.CompilerServices.Extension> _
+    <Runtime.CompilerServices.Extension> _
     Public Function ReadStruct(Of T As Structure)(reader As BinaryReader) As T
         Dim rawData As Byte() = reader.ReadBytes(Marshal.SizeOf(GetType(T)))
         Dim handle As GCHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned)

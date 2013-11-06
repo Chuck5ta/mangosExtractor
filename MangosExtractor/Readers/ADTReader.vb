@@ -227,7 +227,7 @@ Module ADTReader
 
     'Private m_MH20 As ChunkStream
 
-    <StructLayout(LayoutKind.Sequential, Size:=4)> _
+    <StructLayout(LayoutKind.Sequential, Size:=128)> _
     Public Structure MCNK
         Public flags As UInteger
         Public IndexX As UInteger
@@ -353,14 +353,14 @@ Module ADTReader
                 ElseIf chunk.Identifier = "MCIN" Then
                     m_MCIN = Extensions.ReadStruct(Of MCIN)(chunk)
                     'Core.Alert("Found: MCIN", Core.AlertNewLine.AddCRLF)
-                    ' ParseMapPiece(chunk)
+                    'ParseMapPiece(chunk)
                 ElseIf chunk.Identifier = "MH20" Then
                     m_MH20 = chunk
                     'Core.Alert("Found: MH20", Core.AlertNewLine.AddCRLF)
-                    ' ParseMapPiece(chunk)
+                    'ParseMapPiece(chunk)
                 ElseIf chunk.Identifier = "MCVT" Then
                     m_MCVT = Extensions.ReadStruct(Of MCVT)(chunk)
-                    'Core.Alert("Found: MCVT", Core.AlertNewLine.AddCRLF)
+                    Core.Alert("Found: MCVT", Core.AlertNewLine.AddCRLF)
                     ' ParseMapPiece(chunk)
                 ElseIf chunk.Identifier = "MCLQ" Then
                     m_MCLQ = Extensions.ReadStruct(Of MCLQ)(chunk)
@@ -383,8 +383,8 @@ Module ADTReader
 
             Dim r = New BinaryReader(mcvt)
 
-            Dim xoff = hdr.IndexX * 17
-            Dim yoff = hdr.IndexY * 17
+            Dim xoff As Long = hdr.IndexX * 17
+            Dim yoff As Long = hdr.IndexY * 17
 
             ' read the data points
             Dim y = 0
@@ -397,7 +397,7 @@ Module ADTReader
                     If v < MinV Then
                         MinV = v
                     End If
-                    Data(yoff + y, xoff + x * 2) = v
+                    Data(yoff + y, (xoff + x) * 2) = v
                 Next
                 y += 1
                 If y = 17 Then
@@ -411,7 +411,7 @@ Module ADTReader
                     If v < MinV Then
                         MinV = v
                     End If
-                    Data(yoff + y, xoff + x * 2 + 1) = v
+                    Data(yoff + y, (xoff + x) * 2 + 1) = v
                 Next
                 y += 1
             End While
@@ -575,7 +575,7 @@ Module ADTReader
             Dim f = New FileStream(filename, FileMode.Open, FileAccess.Read)
             Dim map = New MapParser(f)
 
-            ' copy to megamap
+            '' copy to megamap
             'Dim yoff = MapParser.Size * x
             'Dim xoff = MapParser.Size * y
             'For yy As Integer = 0 To MapParser.Size - 1
@@ -612,6 +612,7 @@ Module ADTReader
             Dim MHGTData As New StringBuilder
             Dim MLIQData As New StringBuilder
             Dim HOLEData As New StringBuilder
+            'AREAData.Append(map.Data(mapx, mapy).ToString())
 
             'Write Identifier
             sqlWriter.Write("MAPS")
@@ -908,32 +909,33 @@ Module ADTReader
                         Next
                     Next
 
-                    '      Dim c_flag As UInt32 = cell.flags
-                    'If c_flag And (1 << 2) Then
-                    '    liquid_entry(i, j) = 1
-                    '    ' water
-                    '    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_WATER
-                    'End If
-                    'If c_flag And (1 << 3) Then
-                    '    liquid_entry(i, j) = 2
-                    '    ' ocean
-                    '    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_OCEAN
-                    'End If
-                    'If c_flag And (1 << 4) Then
-                    '    liquid_entry(i, j) = 3
-                    '    ' magma/slime
-                    '    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_MAGMA
-                    'End If
+                    Dim c_flag As UInt32 = map.MCNK.flags
+                    If c_flag And (1 << 2) Then
+                        liquid_entry(i, j) = 1
+                        ' water
+                        liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_WATER
+                    End If
+                    If c_flag And (1 << 3) Then
+                        liquid_entry(i, j) = 2
+                        ' ocean
+                        liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_OCEAN
+                    End If
+                    If c_flag And (1 << 4) Then
+                        liquid_entry(i, j) = 3
+                        ' magma/slime
+                        liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_MAGMA
+                    End If
 
-                    'If Not count AndAlso liquid_flags(i)(j) Then
-                    '    fprintf(stderr, "Wrong liquid detect in MCLQ chunk")
-                    'End If
+                    If Not count AndAlso liquid_flags(i, j) Then
+                        MsgBox("Wrong liquid detect in MCLQ chunk")
+                    End If
 
                     For y As Integer = 0 To ADT_CELL_SIZE
                         Dim cy As Integer = i * ADT_CELL_SIZE + y
                         For x As Integer = 0 To ADT_CELL_SIZE
                             Dim cx As Integer = j * ADT_CELL_SIZE + x
-                            ' liquid_height(cy, cx) = liquid.liquid(y, x).height
+                            liquid_height(cy, cx) = map.MCLQ.liquid(y, x).height
+                            'MLIQData.Append(map.MCLQ.liquid(y, x).height)
                         Next
                     Next
                 Next
@@ -974,10 +976,16 @@ Module ADTReader
             sqlWriter.Write(Chr(0) & Chr(2) & Chr(0) & Chr(0))
 
             'Write Identifier
-            sqlWriter.Write(AREAHdr)
-            sqlWriter.Write(MHGTHdr)
-            sqlWriter.Write(MLIQHdr)
-            sqlWriter.Write(HOLEHdr)
+            sqlWriter.Write(AREAHdr.ToString())
+            sqlWriter.Write(MHGTHdr.ToString())
+            sqlWriter.Write(MLIQHdr.ToString())
+            sqlWriter.Write(HOLEHdr.ToString())
+
+            'Now Need to write out the data chunks
+            'sqlWriter.Write(AREAData.ToString())
+            'sqlWriter.Write(MHGTData.ToString())
+            'sqlWriter.Write(MLIQData.ToString())
+            'sqlWriter.Write(HOLEData.ToString())
 
             sqlWriter.Flush()
             sqlWriter.Close()

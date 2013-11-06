@@ -6,7 +6,7 @@ Module AD2
 
     Sub Main()
         Console.WriteLine(" ")
-        Console.WriteLine("MaNGOSExtractor{0} CommandLine", Core.MaNGOSExtractorCore.Version())
+        Console.WriteLine("MaNGOSExtractor{0} CommandLine", MaNGOSExtractorVersion)
         Console.WriteLine("================================")
         Console.WriteLine(" ")
         If My.Application.CommandLineArgs.Count = 0 Then
@@ -64,7 +64,7 @@ Module AD2
                             strInputFolder = ""
                         End If
 
-                        If System.IO.Directory.Exists(strInputFolder) = True Then
+                        If Directory.Exists(strInputFolder) = True Then
                             Console.WriteLine("Source Folder: " & strInputFolder)
                         Else
                             Console.WriteLine("Source Folder: *ERROR* - Folder '" & strInputFolder & "' was not found (or accessible)")
@@ -80,11 +80,11 @@ Module AD2
                             strOutputFolder = ""
                         End If
 
-                        If System.IO.Directory.Exists(strOutputFolder) = True Then
+                        If Directory.Exists(strOutputFolder) = True Then
                             Console.WriteLine("Output Folder: " & strOutputFolder)
                         Else
                             Try
-                                System.IO.Directory.CreateDirectory(strOutputFolder)
+                                Directory.CreateDirectory(strOutputFolder)
                                 Console.WriteLine("Output Folder: " & strOutputFolder)
                             Catch ex As Exception
                                 Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be created")
@@ -94,31 +94,31 @@ Module AD2
                         Commands = Commands + 1
                     Case "-s"
                         blnExportToSQL = True
-                        If System.IO.Directory.Exists(strOutputFolder) = False Then
+                        If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
                             blnCMDError = True
                         End If
                     Case "-c"
                         blnExportToCSV = True
-                        If System.IO.Directory.Exists(strOutputFolder) = False Then
+                        If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
                             blnCMDError = True
                         End If
                     Case "-x"
                         blnExportToXML = True
-                        If System.IO.Directory.Exists(strOutputFolder) = False Then
+                        If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
                             blnCMDError = True
                         End If
                     Case "-m"
                         blnExportToMD = True
-                        If System.IO.Directory.Exists(strOutputFolder) = False Then
+                        If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
                             blnCMDError = True
                         End If
                     Case "-h"
                         blnExportToH = True
-                        If System.IO.Directory.Exists(strOutputFolder) = False Then
+                        If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
                             blnCMDError = True
                         End If
@@ -151,32 +151,32 @@ Module AD2
             Dim colUpdateFiles As New SortedList()   'Collection containing any update or patch files
 
             Dim colFolders As New Collection                'Collection to hold for the folders to be processed
-            Dim myFolders As System.IO.DirectoryInfo
+            Dim myFolders As DirectoryInfo
 
-            If System.IO.Directory.Exists(strInputFolder) = False Then
-                Alert("Warcraft folder '" & strInputFolder & "' can not be located", Core.AlertNewLine.AddCRLF)
+            If Directory.Exists(strInputFolder) = False Then
+                Alert("Warcraft folder '" & strInputFolder & "' can not be located", AlertNewLine.AddCRLF)
                 Exit Sub
             End If
 
             ReadWarcraftExe(strInputFolder & "/Wow.exe")
-            If Core.FullVersion <> "" Then
-                Alert("Warcraft Version v" & Core.FullVersion & " Build " & Core.BuildNo, Core.AlertNewLine.AddCRLF)
+            If FullVersion <> "" Then
+                Alert("Warcraft Version v" & FullVersion & " Build " & BuildNo, AlertNewLine.AddCRLF)
             End If
 
             If blnExtract = True Then
                 'Set the Top level as {Wow Folder}\data
-                myFolders = New System.IO.DirectoryInfo(strInputFolder & "/Data")
+                myFolders = New DirectoryInfo(strInputFolder & "/Data")
 
                 'Add the Data folder to the collection before we start walking down the tree
                 colFolders.Add(myFolders, myFolders.FullName)
 
                 'Build a list of all the subfolders under data
-                Core.ReadFolders(myFolders, colFolders)
+                ReadFolders(myFolders, colFolders)
 
                 'Now we need to walk through the folders, getting the MPQ files along the way
                 For t As Integer = 1 To colFolders.Count()
                     myFolders = colFolders.Item(t)
-                    For Each file As System.IO.FileInfo In myFolders.GetFiles("*.MPQ")
+                    For Each file As FileInfo In myFolders.GetFiles("*.MPQ")
                         If file.FullName.ToLower.Contains("update") = True Or file.FullName.ToLower.Contains("patch") = True Then
                             colUpdateFiles.Add(file.FullName, file.FullName)
                         ElseIf file.FullName.ToLower.Contains("base") = True Then
@@ -197,20 +197,20 @@ Module AD2
 
 
                 For Each strItem As DictionaryEntry In colMainFiles
-                    Alert("Reading: " & strItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
                     Try
-                        Core.ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
+                        ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, Core.AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.AddCRLF)
                     End Try
                 Next
 
                 For Each strItem As DictionaryEntry In colMainFiles
-                    Alert("Reading: " & strItem.Value, Core.AlertNewLine.AddCRLF)
+                    Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
                     Try
-                        Core.ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
+                        ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, Core.AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.AddCRLF)
                     End Try
                 Next
 
@@ -218,20 +218,20 @@ Module AD2
                     Alert("Reading: " & strItem.Value, False)
 
                     Try
-                        Core.ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
+                        ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, Core.AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.AddCRLF)
                     End Try
                     Threading.Thread.Sleep(0)
                 Next
-                Alert("Extraction Finished", Core.AlertNewLine.AddCRLF)
+                Alert("Extraction Finished", AlertNewLine.AddCRLF)
             End If
 
 
             'Pass the Parameters to the export routine
             If blnExportToSQL = True Or blnExportToCSV = True Or blnExportToXML = True Or blnExportToMD = True Or blnExportToH = True Then
                 ExportDBCFiles(strInputFolder, strOutputFolder, blnExportToCSV, blnExportToSQL, blnExportToXML, blnExportToMD, blnExportToH)
-                Alert("Export Finished", Core.AlertNewLine.AddCRLF)
+                Alert("Export Finished", AlertNewLine.AddCRLF)
             End If
 
             End

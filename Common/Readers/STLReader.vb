@@ -133,9 +133,9 @@ Namespace FileReader
         Private reader As BinaryReader
 
         Public Sub New(fileName As String)
-            reader = BinaryReaderExtensions.FromFile(fileName)
+            reader = FromFile(fileName)
 
-            Dim mHdr As MPQHeader = reader.ReadStruct(Of MPQHeader)()
+            'Dim mHdr As MPQHeader = reader.ReadStruct(Of MPQHeader)()
             Dim sHdr As StlHeader = reader.ReadStruct(Of StlHeader)()
             'StlEntry sEntry = reader.ReadStruct<StlEntry>();
 

@@ -76,7 +76,7 @@ Namespace FileReader
         End Property
 
         Public Sub New(fileName As String)
-            Using reader = BinaryReaderExtensions.FromFile(fileName)
+            Using reader = FromFile(fileName)
                 If reader.BaseStream.Length < HeaderSize Then
                     Throw New InvalidDataException([String].Format("File {0} is corrupted!", fileName))
                 End If

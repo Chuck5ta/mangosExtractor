@@ -159,9 +159,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="../Common/Writers/Export2H.vb">
-	  <Link>Writers\Export2H.vb</Link>
+      <Link>Writers\Export2H.vb</Link>
     </Compile>
-
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
