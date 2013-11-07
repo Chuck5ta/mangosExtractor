@@ -1,6 +1,5 @@
 ﻿Imports System.IO
 Imports System.Text
-'Imports MpqLib
 Imports System.Data
 Imports System.Reflection
 Imports System.Linq.Expressions
@@ -8,11 +7,10 @@ Imports System.Linq.Expressions
 
 Namespace Core
     Module MaNGOSExtractorCore
-        'Private m_Version As String = " v1.3"
         Private m_BuildNo As Integer
         Private m_MajorVersion As Integer
         Private m_FullVersion As String
-        Public ReadOnly MaNGOSExtractorVersion As String = "v1.45"
+        Public ReadOnly MaNGOSExtractorVersion As String = "v1.46"
 
         Property BuildNo As Integer
             Get
@@ -79,15 +77,15 @@ Namespace Core
         ''' <value></value>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Property alertlist As ListBox
+        Public Property alertlist As Listbox
             Get
                 Return m_alertlist
             End Get
-            Set(value As ListBox)
+            Set(value As Listbox)
                 m_alertlist = value
             End Set
         End Property
-        Private m_alertlist As ListBox
+        Private m_alertlist As Listbox
 
         Public Sub ReadWarcraftExe(ByRef Filename As String)
             Try
@@ -313,7 +311,7 @@ Namespace Core
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                    Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
                         Dim inbyteData(thisFile.Size - 1) As Byte
                         Dim intFileType As Integer = 0
@@ -417,7 +415,7 @@ Namespace Core
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                    Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
                     End If
                 Next
@@ -459,7 +457,7 @@ Namespace Core
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                    Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
                         Dim inbyteData(thisFile.Size - 1) As Byte
                         Dim intFileType As Integer = 0
@@ -563,7 +561,7 @@ Namespace Core
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                    Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
                     End If
                 Next
@@ -709,7 +707,7 @@ Namespace Core
 
             If intMaxcols > 0 Then
                 For cols As Integer = 0 To intMaxcols Step 4
-                    dbcDataTable.Columns.Add("ErrUnknown" & (cols / 4).ToString(), GetType(String))
+                    dbcDataTable.Columns.Add("Unknown" & (cols / 4).ToString(), GetType(String))
 #If _MyType <> "Console" Then
                     Application.DoEvents()
 #Else
@@ -762,8 +760,13 @@ Namespace Core
                                 TempCol = -1
                             Else
                                 Try
-                                    If entireRow(cols + 3) > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
-                                        TempCol = -1
+                                    If entireRow(cols + 3) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
+                                        'Float Value Here
+                                        TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
+                                    ElseIf entireRow(cols + 3) > 0 And entireRow(cols + 2) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
+                                        'Float Value Here
+                                        TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
+
                                     Else
                                         TempCol = (entireRow(cols + 3) * 16777216) + (entireRow(cols + 2) * 65536) + (entireRow(cols + 1) * 256) + (entireRow(cols + 0))
                                     End If
@@ -832,40 +835,45 @@ Namespace Core
                         If SteppingAmount < 1 Then SteppingAmount = 1
                         For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
                             If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                                If m_reader.StringTable.ContainsKey(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                                    blnFoundString = False
+                                If dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
+                                    Try
+                                        If m_reader.StringTable.ContainsKey(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
+                                            blnFoundString = False
 
-                                    Dim strDataType As String = ""
-                                    Dim strCurDataType As String = "Int32"
-                                    If Not IsDBNull(dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))) Then
-                                        strCurDataType = dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))
-                                    Else
-                                        strCurDataType = "1"
-                                    End If
-                                    Select Case strCurDataType
-                                        Case "0"
-                                            strDataType = "String"
-                                        Case "1"
-                                            strDataType = "Int32"
-                                        Case "2"
-                                            strDataType = "Long"
-                                        Case "3"
-                                            strDataType = "Float"
-                                    End Select
-                                    strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
-                                    'Try
-                                    If strDataType = "Int32" Then 'Integer
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
-                                    ElseIf strDataType = "Float" Then 'Float
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 3
-                                    ElseIf strDataType = "String" Then 'Float
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
-                                    Else 'Long
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
-                                    End If
-                                    'Catch ex As Exception
-                                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                                    'End Try
+                                            Dim strDataType As String = ""
+                                            Dim strCurDataType As String = "Int32"
+                                            If Not IsDBNull(dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))) Then
+                                                strCurDataType = dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))
+                                            Else
+                                                strCurDataType = "1"
+                                            End If
+                                            Select Case strCurDataType
+                                                Case "0"
+                                                    strDataType = "String"
+                                                Case "1"
+                                                    strDataType = "Int32"
+                                                Case "2"
+                                                    strDataType = "Long"
+                                                Case "3"
+                                                    strDataType = "Float"
+                                            End Select
+                                            strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
+                                            'Try
+                                            If strDataType = "Int32" Then 'Integer
+                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
+                                            ElseIf strDataType = "Float" Then 'Float
+                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 3
+                                            ElseIf strDataType = "String" Then 'Float
+                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
+                                            Else 'Long
+                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
+                                            End If
+                                            'Catch ex As Exception
+                                            '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
+                                            'End Try
+                                        End If
+                                    Catch ex As Exception
+                                    End Try
                                 End If
                             End If
 #If _MyType <> "Console" Then
@@ -881,18 +889,23 @@ Namespace Core
                         If blnFoundString = True And m_reader.StringTableSize > 0 Then
                             Dim thisStrLength As Integer = 0
                             For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                                If Not IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) Then
-                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = m_reader.StringTable(dbcDataTable.Rows(thisScanRow)(CInt(cols)))
-                                    If thisStrLength < dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length Then
-                                        thisStrLength = dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length
-                                    End If
-                                    dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
-                                End If
+                                If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False AndAlso dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
+                                    Try
+                                        If Not IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) Then
+                                            dbcDataTable.Rows(thisScanRow)(CInt(cols)) = m_reader.StringTable(dbcDataTable.Rows(thisScanRow)(CInt(cols)))
+                                            If thisStrLength < dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length Then
+                                                thisStrLength = dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length
+                                            End If
+                                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
+                                        End If
 #If _MyType <> "Console" Then
                                 Application.DoEvents()
 #Else
-                                Threading.Thread.Sleep(0)
+                                        Threading.Thread.Sleep(0)
 #End If
+                                    Catch ex As Exception
+                                    End Try
+                                End If
                             Next
 
                             If thisStrLength = 0 Then
@@ -1262,13 +1275,43 @@ Namespace Core
         '        sqlWriter.Write(MLIQHdr)
         '        sqlWriter.Write(HOLEHdr)
 
-        '        sqlWriter.Flush()
-        '        sqlWriter.Close()
-        '    End If
-        '    Return True
-        'End Function
+        ''' <summary>
+        ''' Converts a hex string to a single.
+        ''' </summary>
+        ''' <param name="hexValue">The hex value.</param>
+        ''' <returns></returns>
+        Private Function ConvertHexToSingle(ByVal hexValue As String) As Single
+            Try
+                Dim iInputIndex As Integer = 0
+                Dim iOutputIndex As Integer = 0
+                Dim bArray(3) As Byte
 
+                For iInputIndex = 0 To hexValue.Length - 1 Step 2
+                    bArray(iOutputIndex) = Byte.Parse(hexValue.Chars(iInputIndex) & hexValue.Chars(iInputIndex + 1), Globalization.NumberStyles.HexNumber)
+                    iOutputIndex += 1
+                Next
 
+                Array.Reverse(bArray)
 
+                Return BitConverter.ToSingle(bArray, 0)
+            Catch ex As Exception
+                Throw New FormatException("The supplied hex value is either empty or in an incorrect format. Use the following format: 00000000", ex)
+            End Try
+        End Function
+
+        ''' <summary>
+        ''' Returns a 2 digit hex string.
+        ''' </summary>
+        ''' <param name="value">The value.</param>
+        ''' <returns><c>String></c></returns>
+        Private Function myHex(ByVal value As Integer) As String
+            Dim retString As String
+            retString = Hex(value)
+            If retString.Length = 1 Then
+                retString = "0" & retString
+            End If
+
+            Return retString
+        End Function
     End Module
 End Namespace
