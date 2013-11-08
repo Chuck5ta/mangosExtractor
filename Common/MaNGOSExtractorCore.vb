@@ -752,188 +752,215 @@ Namespace Core
 
                         thisRow = dbcDataTable.NewRow()
                         Dim cols As Integer = 0
-                        While cols < entireRow.Length() - 1 '(dbcDataTable.Columns.Count()) * 4 '((intMaxcols + 1) * 4)
-                            '                       For cols As Integer = 0 To ((intMaxcols - 1) * 4) Step 4
-                            Dim TempCol As Object '= entireRow(cols)
-                            ' Try
-                            If IsNothing(entireRow) = True Then
-                                TempCol = -1
-                            Else
-                                Try
-                                    If entireRow(cols + 3) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
+                        Dim TempCol As Object '= entireRow(cols)
+                        If entireRow.Length() - 1 < 3 Then
+                            TempCol = entireRow(cols + 1) + entireRow(cols + 0)
+                            thisRow(0) = TempCol
+                        Else
+                            '''''''''''''''''''''''''
+                            While cols < entireRow.Length() - 1 '(dbcDataTable.Columns.Count()) * 4 '((intMaxcols + 1) * 4)
+                                '                       For cols As Integer = 0 To ((intMaxcols - 1) * 4) Step 4
+                                TempCol = New Object '= entireRow(cols)
+                                ' Try
+                                If IsNothing(entireRow) = True Then
+                                    TempCol = -1
+                                Else
+                                    '                                Try
+                                    If entireRow(cols + 3) = 255 And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
+                                        TempCol = "NaN"
+                                    ElseIf entireRow(cols + 3) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
                                         'Float Value Here
                                         TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
-                                    ElseIf entireRow(cols + 3) > 0 And entireRow(cols + 2) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
-                                        'Float Value Here
-                                        TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
-
+                                        'ElseIf entireRow(cols + 3) > 0 And entireRow(cols + 2) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
+                                        '    'Float Value Here
+                                        '    TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
+                                        If TempCol.ToString().Contains("+") Then
+                                            If entireRow(cols + 3) > 127 Then
+                                                'Stop
+                                            Else
+                                                TempCol = (entireRow(cols + 3) * 16777216) + (entireRow(cols + 2) * 65536) + (entireRow(cols + 1) * 256) + (entireRow(cols + 0))
+                                            End If
+                                        End If
                                     Else
                                         TempCol = (entireRow(cols + 3) * 16777216) + (entireRow(cols + 2) * 65536) + (entireRow(cols + 1) * 256) + (entireRow(cols + 0))
                                     End If
-                                Catch ex As Exception
-                                    TempCol = -1
-                                End Try
-                            End If
-                            '                            thisRow(CInt(cols / 4)) = TempCol
-                            thisRow(CInt(cols / 4)) = TempCol
-                            '                        Next
-                            cols = cols + 4
-#If _MyType <> "Console" Then
-                            Application.DoEvents()
-#Else
-                            Threading.Thread.Sleep(0)
-#End If
-                        End While
-                        dbcDataTable.Rows.Add(thisRow)
-                    Next
-                Else 'Empty file
-                    Alert("", AlertNewLine.AddCRLF)
-                End If
-
-                Alert("", AlertNewLine.AddCRLF)
-                'Create a new row at the end to store the datatype
-                If intMaxRows > 0 Then
-                    thisRow = dbcDataTable.NewRow()
-
-                    dbcDataTable.Rows.Add(thisRow)
-                    'Try
-                    Dim strValuecounter As String = "0%---------50%--------100%"
-                    Dim intblockcountersize As Integer = strValuecounter.Length()
-                    'If CInt(Fix(TotalRows / 4) / intblockcountersize) > 0 Then
-                    Alert("   Determining Column Data Types " & strValuecounter & " Cols: " & dbcDataTable.Columns.Count() - 1, AlertNewLine.AddCRLF)
-                    Alert("", AlertNewLine.AddCRLF)
-                    Alert("                                 ", AlertNewLine.NoCRLF)
-                    'End If
-                    Dim totalCols As Integer = dbcDataTable.Columns.Count() - 1
-                    For cols As Integer = 0 To totalCols 'TotalRows Step 4
-#If _MyType <> "Console" Then
-                        Application.DoEvents()
-#Else
-                        Threading.Thread.Sleep(0)
-#End If
-                        If CInt((totalCols / intblockcountersize)) > 0 Then
-                            If cols Mod CInt((totalCols / intblockcountersize)) = 0 Then
-
-                                Alert(".", AlertNewLine.NoCRLF)
-
-                            End If
-                        Else
-                            If (cols + 1) Mod CInt((intblockcountersize / (cols + 1))) = 0 Then
-
-                                Alert(".", AlertNewLine.NoCRLF)
-
-                            End If
-                        End If
-                        '                Catch ex As Exception
-                        '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-
-                        'End Try
-
-                        Dim blnFoundString As Boolean = True
-                        Dim SteppingAmount As Integer = 1 'dbcDataTable.Rows.Count() - 1 / 100
-                        If dbcDataTable.Rows.Count() > 5000 Then SteppingAmount = 100
-                        If SteppingAmount < 1 Then SteppingAmount = 1
-                        For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                            If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                                If dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
-                                    Try
-                                        If m_reader.StringTable.ContainsKey(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                                            blnFoundString = False
-
-                                            Dim strDataType As String = ""
-                                            Dim strCurDataType As String = "Int32"
-                                            If Not IsDBNull(dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))) Then
-                                                strCurDataType = dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))
-                                            Else
-                                                strCurDataType = "1"
-                                            End If
-                                            Select Case strCurDataType
-                                                Case "0"
-                                                    strDataType = "String"
-                                                Case "1"
-                                                    strDataType = "Int32"
-                                                Case "2"
-                                                    strDataType = "Long"
-                                                Case "3"
-                                                    strDataType = "Float"
-                                            End Select
-                                            strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
-                                            'Try
-                                            If strDataType = "Int32" Then 'Integer
-                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
-                                            ElseIf strDataType = "Float" Then 'Float
-                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 3
-                                            ElseIf strDataType = "String" Then 'Float
-                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
-                                            Else 'Long
-                                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
-                                            End If
-                                            'Catch ex As Exception
-                                            '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                                            'End Try
-                                        End If
-                                    Catch ex As Exception
-                                    End Try
+                                    'Catch ex As Exception
+                                    '    TempCol = -1
+                                    'End Try
                                 End If
-                            End If
-#If _MyType <> "Console" Then
-                            Application.DoEvents()
-#Else
-                            Threading.Thread.Sleep(0)
-#End If
-                        Next
-                        'Catch ex As Exception
-                        '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                        'End Try
-
-                        If blnFoundString = True And m_reader.StringTableSize > 0 Then
-                            Dim thisStrLength As Integer = 0
-                            For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                                If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False AndAlso dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
-                                    Try
-                                        If Not IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) Then
-                                            dbcDataTable.Rows(thisScanRow)(CInt(cols)) = m_reader.StringTable(dbcDataTable.Rows(thisScanRow)(CInt(cols)))
-                                            If thisStrLength < dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length Then
-                                                thisStrLength = dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length
-                                            End If
-                                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
-                                        End If
+                                '                            thisRow(CInt(cols / 4)) = TempCol
+                                thisRow(CInt(cols / 4)) = TempCol
+                                '                        Next
+                                cols = cols + 4
 #If _MyType <> "Console" Then
                                 Application.DoEvents()
 #Else
-                                        Threading.Thread.Sleep(0)
+                            Threading.Thread.Sleep(0)
 #End If
-                                    Catch ex As Exception
-                                    End Try
-                                End If
-                            Next
+                            End While
+                        End If
+                dbcDataTable.Rows.Add(thisRow)
+                ''''''''''''''''''''''''
 
-                            If thisStrLength = 0 Then
-                                For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                                    dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
-                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
+                    Next
+            Else 'Empty file
+                Alert("", AlertNewLine.AddCRLF)
+            End If
+
+            Alert("", AlertNewLine.AddCRLF)
+            'Create a new row at the end to store the datatype
+            If intMaxRows > 0 Then
+                thisRow = dbcDataTable.NewRow()
+
+                dbcDataTable.Rows.Add(thisRow)
+                'Try
+                Dim strValuecounter As String = "0%---------50%--------100%"
+                Dim intblockcountersize As Integer = strValuecounter.Length()
+                'If CInt(Fix(TotalRows / 4) / intblockcountersize) > 0 Then
+                Alert("   Determining Column Data Types " & strValuecounter & " Cols: " & dbcDataTable.Columns.Count() - 1, AlertNewLine.AddCRLF)
+                Alert("", AlertNewLine.AddCRLF)
+                Alert("                                 ", AlertNewLine.NoCRLF)
+                'End If
+                Dim totalCols As Integer = dbcDataTable.Columns.Count() - 1
+                For cols As Integer = 0 To totalCols 'TotalRows Step 4
 #If _MyType <> "Console" Then
-                                    Application.DoEvents()
+                    Application.DoEvents()
 #Else
-                                    Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
-                                Next
-                            End If
+                    If CInt((totalCols / intblockcountersize)) > 0 Then
+                        If cols Mod CInt((totalCols / intblockcountersize)) = 0 Then
+
+                            Alert(".", AlertNewLine.NoCRLF)
+
+                        End If
+                    Else
+                        If (cols + 1) Mod CInt((intblockcountersize / (cols + 1))) = 0 Then
+
+                            Alert(".", AlertNewLine.NoCRLF)
+
+                        End If
+                    End If
+                    '                Catch ex As Exception
+                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
+
+                    'End Try
+
+                    Dim blnFoundString As Boolean = True
+                    Dim SteppingAmount As Integer = 1 'dbcDataTable.Rows.Count() - 1 / 100
+                    If dbcDataTable.Rows.Count() > 5000 Then SteppingAmount = 100
+                    If SteppingAmount < 1 Then SteppingAmount = 1
+                    For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
+                        If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
+                            If dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
+                                '                                    Try
+                                If m_reader.StringTable.ContainsKey(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
+                                    blnFoundString = False
+
+                                    Dim strDataType As String = ""
+                                    Dim strCurDataType As String = "Int32"
+                                    If Not IsDBNull(dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))) Then
+                                        strCurDataType = dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))
+                                    Else
+                                        strCurDataType = "1"
+                                    End If
+                                    Select Case strCurDataType
+                                        Case "0"
+                                            strDataType = "String"
+                                        Case "1"
+                                            strDataType = "Int32"
+                                        Case "2"
+                                            strDataType = "Long"
+                                        Case "3"
+                                            strDataType = "Float"
+                                    End Select
+                                    strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
+                                    'Try
+                                    If strDataType = "Int32" Then 'Integer
+                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
+                                    ElseIf strDataType = "Float" Then 'Float
+                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 3
+                                    ElseIf strDataType = "String" Then 'Float
+                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
+                                    Else 'Long
+                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
+                                    End If
+                                    'Catch ex As Exception
+                                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
+                                    'End Try
+                                End If
+                                'Catch ex As Exception
+                                'End Try
+                                Else
+                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
+                                End If
                         End If
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                        Threading.Thread.Sleep(0)
+                            Threading.Thread.Sleep(0)
 #End If
                     Next
-
                     'Catch ex As Exception
                     '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
                     'End Try
-                End If
-                Alert("", AlertNewLine.AddCRLF)
+
+                    If blnFoundString = True And m_reader.StringTableSize > 0 Then
+                        Dim thisStrLength As Integer = 0
+                        For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
+                            'If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False AndAlso dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
+                            '    Try
+                            'If Not IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) Then
+                            If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = True Then
+                                dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
+                                '                                    Stop
+                            Else
+                                If dbcDataTable.Rows(thisScanRow)(CInt(cols)) = "NaN" Then
+                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = ""
+                                Else
+                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = m_reader.StringTable(dbcDataTable.Rows(thisScanRow)(CInt(cols)))
+                                    If thisStrLength < dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length Then
+                                        thisStrLength = dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length
+                                    End If
+                                    dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
+                                End If
+                            End If
+#If _MyType <> "Console" Then
+                            Application.DoEvents()
+#Else
+                                        Threading.Thread.Sleep(0)
+#End If
+                            'Catch ex As Exception
+                            'End Try
+                            'End If
+                        Next
+
+                        If thisStrLength = 0 Then
+                            For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
+                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
+                                dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
+#If _MyType <> "Console" Then
+                                Application.DoEvents()
+#Else
+                                    Threading.Thread.Sleep(0)
+#End If
+                            Next
+                        End If
+                    End If
+#If _MyType <> "Console" Then
+                    Application.DoEvents()
+#Else
+                        Threading.Thread.Sleep(0)
+#End If
+                Next
+
+                'Catch ex As Exception
+                '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
+                'End Try
+            End If
+            Alert("", AlertNewLine.AddCRLF)
             Else 'No Rows
-                Alert("", AlertNewLine.AddCRLF)
+            Alert("", AlertNewLine.AddCRLF)
             End If
             'Catch ex As Exception
             '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
