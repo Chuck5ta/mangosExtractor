@@ -1,8 +1,7 @@
-Imports System.Collections.Generic
 Imports System.IO
 
 Namespace FileReader
-    Interface IWowClientDBReader
+    Interface IWowClientDbReader
         ReadOnly Property RecordsCount As Integer
         ReadOnly Property FieldsCount As Integer
         ReadOnly Property RecordSize As Integer

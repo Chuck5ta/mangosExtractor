@@ -1,19 +1,23 @@
-Imports System.Globalization
-Imports System.IO
 Imports System.Runtime.InteropServices
+Imports System.IO
+Imports System.Runtime.CompilerServices
+Imports System.Globalization
 Imports System.Text
 
 Public Module BinaryReaderExtensions
+
 #Region "Coords3"
+    
     ''' <summary>
-    '''  Represents a coordinates of WoW object without orientation.
+    '''     Represents a coordinates of WoW object without orientation.
     ''' </summary>
-    <StructLayout(LayoutKind.Sequential)> _
+    <StructLayout(LayoutKind.Sequential)>
     Structure Coords3
         Public X As Single, Y As Single, Z As Single
 
+        
         ''' <summary>
-        '''  Converts the numeric values of this instance to its equivalent string representations, separator is space.
+        '''     Converts the numeric values of this instance to its equivalent string representations, separator is space.
         ''' </summary>
         Public Function GetCoords() As String
             Dim coords As String = [String].Empty
@@ -27,18 +31,22 @@ Public Module BinaryReaderExtensions
             Return coords
         End Function
     End Structure
+
 #End Region
 
 #Region "Coords4"
+
+    
     ''' <summary>
-    '''  Represents a coordinates of WoW object with specified orientation.
+    '''     Represents a coordinates of WoW object with specified orientation.
     ''' </summary>
-    <StructLayout(LayoutKind.Sequential)> _
+    <StructLayout(LayoutKind.Sequential)>
     Structure Coords4
         Public X As Single, Y As Single, Z As Single, O As Single
 
+        
         ''' <summary>
-        '''  Converts the numeric values of this instance to its equivalent string representations, separator is space.
+        '''     Converts the numeric values of this instance to its equivalent string representations, separator is space.
         ''' </summary>
         Public Function GetCoordsAsString() As String
             Dim coords As String = [String].Empty
@@ -54,19 +62,23 @@ Public Module BinaryReaderExtensions
             Return coords
         End Function
     End Structure
+
 #End Region
 
     Sub New()
     End Sub
+
     Public Function FromFile(fileName As String) As BinaryReader
         Return New BinaryReader(New FileStream(fileName, FileMode.Open), Encoding.UTF8)
     End Function
 
 #Region "ReadPackedGuid"
+
+    
     ''' <summary>
-    '''  Reads the packed guid from the current stream and advances the current position of the stream by packed guid size.
+    '''     Reads the packed guid from the current stream and advances the current position of the stream by packed guid size.
     ''' </summary>
-    <Runtime.CompilerServices.Extension> _
+    <Extension>
     Public Function ReadPackedGuid(reader As BinaryReader) As ULong
         Dim res As ULong = 0
         Dim mask As Byte = reader.ReadByte()
@@ -79,22 +91,24 @@ Public Module BinaryReaderExtensions
 
         While i < 9
             If (mask And 1 << i) <> 0 Then
-                res += CULng(reader.ReadByte()) << (i * 8)
+                res += CULng(reader.ReadByte()) << (i*8)
             End If
             i += 1
         End While
         Return res
     End Function
+
 #End Region
 
 #Region "ReadStringNumber"
 
+    
     ''' <summary>
-    ''' Reads the string number.
+    '''     Reads the string number.
     ''' </summary>
     ''' <param name="reader">The reader.</param>
     ''' <returns></returns>
-    <Runtime.CompilerServices.Extension> _
+    <Extension>
     Public Function ReadStringNumber(reader As BinaryReader) As String
         Dim text As String = [String].Empty
         Dim num As UInteger = reader.ReadUInt32()
@@ -104,16 +118,18 @@ Public Module BinaryReaderExtensions
         Next
         Return text
     End Function
+
 #End Region
 
 #Region "ReadStringNull"
 
+    
     ''' <summary>
-    ''' Reads the string null.
+    '''     Reads the string null.
     ''' </summary>
     ''' <param name="reader">The reader.</param>
     ''' <returns></returns>
-    <Runtime.CompilerServices.Extension> _
+    <Extension>
     Public Function ReadStringNull(reader As BinaryReader) As String
         Dim num As Byte
         Dim text As String = [String].Empty
@@ -127,13 +143,16 @@ Public Module BinaryReaderExtensions
 
         Return text
     End Function
+
 #End Region
 
 #Region "ReadCoords3"
+
+    
     ''' <summary>
-    '''  Reads the object coordinates from the current stream and advances the current position of the stream by 12 bytes.
+    '''     Reads the object coordinates from the current stream and advances the current position of the stream by 12 bytes.
     ''' </summary>
-    <Runtime.CompilerServices.Extension> _
+    <Extension>
     Public Function ReadCoords3(reader As BinaryReader) As Coords3
         Dim v As Coords3
 
@@ -143,13 +162,17 @@ Public Module BinaryReaderExtensions
 
         Return v
     End Function
+
 #End Region
 
 #Region "ReadCoords4"
+
+    
     ''' <summary>
-    '''  Reads the object coordinates and orientation from the current stream and advances the current position of the stream by 16 bytes.
+    '''     Reads the object coordinates and orientation from the current stream and advances the current position of the
+    '''     stream by 16 bytes.
     ''' </summary>
-    <Runtime.CompilerServices.Extension> _
+    <Extension>
     Public Function ReadCoords4(reader As BinaryReader) As Coords4
         Dim v As Coords4
 
@@ -160,26 +183,31 @@ Public Module BinaryReaderExtensions
 
         Return v
     End Function
+
 #End Region
 
 #Region "ReadStruct"
+
+    
     ''' <summary>
-    ''' Reads struct from the current stream and advances the current position if the stream by SizeOf(T) bytes.
+    '''     Reads struct from the current stream and advances the current position if the stream by SizeOf(T) bytes.
     ''' </summary>
     ''' <typeparam name="T"></typeparam>
     ''' <param name="reader"></param>
     ''' <returns></returns>
-    <Runtime.CompilerServices.Extension> _
-    Public Function ReadStruct(Of T As Structure)(reader As BinaryReader) As T
+    <Extension>
+    Public Function ReadStruct (Of T As Structure)(reader As BinaryReader) As T
         Dim rawData As Byte() = reader.ReadBytes(Marshal.SizeOf(GetType(T)))
         Dim handle As GCHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned)
         Dim returnObject As T = DirectCast(Marshal.PtrToStructure(handle.AddrOfPinnedObject(), GetType(T)), T)
         handle.Free()
         Return returnObject
     End Function
-    Private Function InlineAssignHelper(Of T)(ByRef target As T, value As T) As T
+
+    Private Function InlineAssignHelper (Of T)(ByRef target As T, value As T) As T
         target = value
         Return value
     End Function
+
 #End Region
 End Module

@@ -32,7 +32,7 @@ Namespace My
         
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateMainForm()
-            Me.MainForm = Global.MangosExtractor.MaNGOSExtractor
+            Me.MainForm = Global.MangosExtractor.WizardScreen1
         End Sub
     End Class
 End Namespace

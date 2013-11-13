@@ -148,13 +148,30 @@
       <Link>Common\BSDIFF40.vb</Link>
     </Compile>
     <Compile Include="../Common/Writers/Export2H.vb">
-	  <Link>Writers\Export2H.vb</Link>
+      <Link>Writers\Export2H.vb</Link>
+    </Compile>
+    <Compile Include="MaNGOSExtractor.Designer.vb">
+      <DependentUpon>MaNGOSExtractor.vb</DependentUpon>
     </Compile>
     <Compile Include="MaNGOSExtractor.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MaNGOSExtractor.Designer.vb">
-      <DependentUpon>MaNGOSExtractor.vb</DependentUpon>
+    <Compile Include="WizardScreen3.Designer.vb">
+      <DependentUpon>WizardScreen3.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WizardScreen3.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WizardScreen2.Designer.vb">
+      <DependentUpon>WizardScreen2.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WizardScreen2.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WizardScreen1.Designer.vb">
+      <DependentUpon>WizardScreen1.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WizardScreen1.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -173,11 +190,26 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Readers\ADTReader.vb" />
+    <Compile Include="WizardScreen5.Designer.vb">
+      <DependentUpon>WizardScreen5.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WizardScreen5.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Writers\Export2Map.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MaNGOSExtractor.resx">
       <DependentUpon>MaNGOSExtractor.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardScreen3.resx">
+      <DependentUpon>WizardScreen3.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardScreen2.resx">
+      <DependentUpon>WizardScreen2.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardScreen1.resx">
+      <DependentUpon>WizardScreen1.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
@@ -185,9 +217,14 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="WizardScreen5.resx">
+      <DependentUpon>WizardScreen5.vb</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
+    <EmbeddedResource Include="Common\Mangos_DBC_Installer.bat" />
     <None Include="My Project\app.manifest" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
@@ -206,6 +243,7 @@
     <Content Include="../Common/MpqLib.xml">
       <Link>Common\MpqLib.xml</Link>
     </Content>
+    <EmbeddedResource Include="Common\mysql.exe" />
     <Content Include="mangostools_Icon_64x64.ico" />
     <EmbeddedResource Include="../Common/dbc_classic.xml">
       <Link>Common\dbc_classic.xml</Link>

@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports MangosExtractor.Core
 
 Public Class Export2Map
     '
@@ -6,13 +7,13 @@ Public Class Export2Map
     '
 
     ' Map file format data
-    Public MAP_MAGIC As String = "MAPS"
-    Public MAP_VERSION_MAGIC As String = "z1.3"
-    Public MAP_AREA_MAGIC As String = "AREA"
-    Public MAP_HEIGHT_MAGIC As String = "MHGT"
-    Public MAP_LIQUID_MAGIC As String = "MLIQ"
+    Public MapMagic As String = "MAPS"
+    Public MapVersionMagic As String = "z1.3"
+    Public MapAreaMagic As String = "AREA"
+    Public MapHeightMagic As String = "MHGT"
+    Public MapLiquidMagic As String = "MLIQ"
 
-    Structure map_fileheader
+    Structure MapFileheader
         Private mapMagic As UInt32
         Private versionMagic As UInt32
         Private areaMapOffset As UInt32
@@ -25,87 +26,86 @@ Public Class Export2Map
         Private holesSize As UInt32
     End Structure
 
-    Const MAP_AREA_NO_AREA As Integer = &H1
+    Const MapAreaNoArea As Integer = &H1
 
-    Private Structure map_areaHeader
-        Dim fourcc As UInt32
-        Dim flags As UInt16
-        Dim gridArea As UInt16
+    Private Structure MapAreaHeader
+        Dim Fourcc As UInt32
+        Dim Flags As UInt16
+        Dim GridArea As UInt16
     End Structure
 
-    Const MAP_HEIGHT_NO_HEIGHT As Integer = &H1
-    Const MAP_HEIGHT_AS_INT16 As Integer = &H2
-    Const MAP_HEIGHT_AS_INT8 As Integer = &H4
+    Const MapHeightNoHeight As Integer = &H1
+    Const MapHeightAsInt16 As Integer = &H2
+    Const MapHeightAsInt8 As Integer = &H4
 
-    Private Structure map_heightHeader
-        Dim fourcc As UInt32
-        Dim flags As UInt32
-        Dim gridHeight As Double
-        Dim gridMaxHeight As Double
+    Private Structure MapHeightHeader
+        Dim Fourcc As UInt32
+        Dim Flags As UInt32
+        Dim GridHeight As Double
+        Dim GridMaxHeight As Double
     End Structure
 
-    Const MAP_LIQUID_TYPE_NO_WATER As Integer = &H0
-    Const MAP_LIQUID_TYPE_MAGMA As Integer = &H1
-    Const MAP_LIQUID_TYPE_OCEAN As Integer = &H2
-    Const MAP_LIQUID_TYPE_SLIME As Integer = &H4
-    Const MAP_LIQUID_TYPE_WATER As Integer = &H8
+    Const MapLiquidTypeNoWater As Integer = &H0
+    Const MapLiquidTypeMagma As Integer = &H1
+    Const MapLiquidTypeOcean As Integer = &H2
+    Const MapLiquidTypeSlime As Integer = &H4
+    Const MapLiquidTypeWater As Integer = &H8
 
-    Const MAP_LIQUID_TYPE_DARK_WATER As Integer = &H10
-    Const MAP_LIQUID_TYPE_WMO_WATER As Integer = &H20
+    Const MapLiquidTypeDarkWater As Integer = &H10
+    Const MapLiquidTypeWmoWater As Integer = &H20
 
+    Const MapLiquidNoType As Integer = &H1
+    Const MapLiquidNoHeight As Integer = &H2
 
-    Const MAP_LIQUID_NO_TYPE As Integer = &H1
-    Const MAP_LIQUID_NO_HEIGHT As Integer = &H2
-
-    Structure map_liquidHeader
-        Private fourcc As UInt32
-        Private flags As UInt16
-        Private liquidType As UInt16
-        Private offsetX As SByte
-        Private offsetY As SByte
-        Private width As SByte
-        Private height As SByte
-        Private liquidLevel As Double
+    Structure MapLiquidHeader
+        Private _fourcc As UInt32
+        Private _flags As UInt16
+        Private _liquidType As UInt16
+        Private _offsetX As SByte
+        Private _offsetY As SByte
+        Private _width As SByte
+        Private _height As SByte
+        Private _liquidLevel As Double
     End Structure
 
-    Private Shared Function selectUInt8StepStore(maxDiff As Single) As Single
-        Return 255 / maxDiff
+    Private Shared Function SelectUInt8StepStore(maxDiff As Single) As Single
+        Return 255/maxDiff
     End Function
 
-    Private Shared Function selectUInt16StepStore(maxDiff As Single) As Single
-        Return 65535 / maxDiff
+    Private Shared Function SelectUInt16StepStore(maxDiff As Single) As Single
+        Return 65535/maxDiff
     End Function
 
-    Const ADT_CELLS_PER_GRID As Integer = 16
-    Const ADT_CELL_SIZE As Integer = 8
-    Const ADT_GRID_SIZE As Integer = (ADT_CELLS_PER_GRID * ADT_CELL_SIZE)
+    Const AdtCellsPerGrid As Integer = 16
+    Const AdtCellSize As Integer = 8
+    Const AdtGridSize As Integer = (AdtCellsPerGrid*AdtCellSize)
 
     ' Temporary grid data store
-    Public area_flags(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As UInt16
+    Public AreaFlags(AdtCellsPerGrid, AdtCellsPerGrid) As UInt16
 
-    Public V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As Double
-    Public V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As Double
-    Public uint16_V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As UInt16
-    Public uint16_V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As UInt16
-    Public uint8_V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As SByte
-    Public uint8_V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As SByte
+    Public V8(AdtGridSize, AdtGridSize) As Double
+    Public V9(AdtGridSize + 1, AdtGridSize + 1) As Double
+    Public Uint16V8(AdtGridSize, AdtGridSize) As UInt16
+    Public Uint16V9(AdtGridSize + 1, AdtGridSize + 1) As UInt16
+    Public Uint8V8(AdtGridSize, AdtGridSize) As SByte
+    Public Uint8V9(AdtGridSize + 1, AdtGridSize + 1) As SByte
 
-    Public liquid_entry(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As UInt16
-    Public liquid_flags(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As SByte
-    Public liquid_show(ADT_GRID_SIZE, ADT_GRID_SIZE) As Boolean
-    Public liquid_height(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As Double
+    Public LiquidEntry(AdtCellsPerGrid, AdtCellsPerGrid) As UInt16
+    Public LiquidFlags(AdtCellsPerGrid, AdtCellsPerGrid) As SByte
+    Public LiquidShow(AdtGridSize, AdtGridSize) As Boolean
+    Public LiquidHeight(AdtGridSize + 1, AdtGridSize + 1) As Double
 
     ' This option allow use float to int conversion
-    Public CONF_allow_float_to_int As Boolean = True
-    Public CONF_float_to_int8_limit As Double = 2.0F  '    // Max accuracy = val/256
-    Public CONF_float_to_int16_limit As Double = 2048.0F '   // Max accuracy = val/65536
-    Public CONF_flat_height_delta_limit As Double = 0.005F ' // If max - min less this value - surface is flat
-    Public CONF_flat_liquid_delta_limit As Double = 0.001F ' // If max - min less this value - liquid surface is flat
+    Public ConfAllowFloatToInt As Boolean = True
+    Public ConfFloatToInt8Limit As Double = 2.0F  '    // Max accuracy = val/256
+    Public ConfFloatToInt16Limit As Double = 2048.0F '   // Max accuracy = val/65536
+    Public ConfFlatHeightDeltaLimit As Double = 0.005F ' // If max - min less this value - surface is flat
+    Public ConfFlatLiquidDeltaLimit As Double = 0.001F ' // If max - min less this value - liquid surface is flat
 
-    Public Sub ConvertADT(adtfilename As String, ByRef outputFilename As String, mapx As Integer, mapy As Integer, dictMaps As Dictionary(Of Integer, String), dictAreaTable As Dictionary(Of Integer, String), dictLiquidType As Dictionary(Of Integer, Integer))
+    Public Sub ConvertAdt(adtfilename As String, ByRef outputFilename As String, mapx As Integer, mapy As Integer, dictMaps As Dictionary(Of Integer, String), dictAreaTable As Dictionary(Of Integer, String), dictLiquidType As Dictionary(Of Integer, Integer))
         'these need to be options switches
         Dim CONF_allow_height_limit As Boolean = True
-        Dim CONF_use_minHeight As Double = -500.0F
+        Dim CONF_use_minHeight As Double = - 500.0F
 
         Dim filename = adtfilename
         Console.WriteLine(filename)
@@ -115,19 +115,19 @@ Public Class Export2Map
         Dim maxV = [Single].MinValue
         Dim minV = [Single].MaxValue
 
-        Dim area_flags(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As UInt16
+        Dim areaFlags(AdtCellsPerGrid, AdtCellsPerGrid) As UInt16
 
-        Dim V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As Double
-        Dim V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As Double
-        Dim uint16_V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As UInt16
-        Dim uint16_V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As UInt16
-        Dim uint8_V8(ADT_GRID_SIZE, ADT_GRID_SIZE) As SByte
-        Dim uint8_V9(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As SByte
+        Dim v8(AdtGridSize, AdtGridSize) As Double
+        Dim v9(AdtGridSize + 1, AdtGridSize + 1) As Double
+        Dim uint16V8(AdtGridSize, AdtGridSize) As UInt16
+        Dim uint16V9(AdtGridSize + 1, AdtGridSize + 1) As UInt16
+        Dim uint8V8(AdtGridSize, AdtGridSize) As SByte
+        Dim uint8V9(AdtGridSize + 1, AdtGridSize + 1) As SByte
 
-        Dim liquid_entry(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As UInt16
-        Dim liquid_flags(ADT_CELLS_PER_GRID, ADT_CELLS_PER_GRID) As SByte
-        Dim liquid_show(ADT_GRID_SIZE, ADT_GRID_SIZE) As Boolean
-        Dim liquid_height(ADT_GRID_SIZE + 1, ADT_GRID_SIZE + 1) As Double
+        Dim liquidEntry(AdtCellsPerGrid, AdtCellsPerGrid) As UInt16
+        Dim liquidFlags(AdtCellsPerGrid, AdtCellsPerGrid) As SByte
+        Dim liquidShow(AdtGridSize, AdtGridSize) As Boolean
+        Dim liquidHeight(AdtGridSize + 1, AdtGridSize + 1) As Double
 
         If map.MaxV > maxV Then
             maxV = map.MaxV
@@ -138,22 +138,22 @@ Public Class Export2Map
 
 
         ' Get area flags data
-        Dim thisMCNK As MCNK = map.MCNK
+        Dim thisMcnk As Mcnk = map.Mcnk
 
-        For i As Integer = 0 To ADT_CELLS_PER_GRID - 1
-            For j As Integer = 0 To ADT_CELLS_PER_GRID - 1
-                thisMCNK.IndexX = i
-                thisMCNK.IndexY = j
-                If thisMCNK.areaid > 0 Then
-                    If dictAreaTable(thisMCNK.areaid) <> &HFFFF Then
-                        area_flags(i, j) = dictAreaTable(thisMCNK.areaid)
+        For i As Integer = 0 To AdtCellsPerGrid - 1
+            For j As Integer = 0 To AdtCellsPerGrid - 1
+                thisMcnk.IndexX = i
+                thisMcnk.IndexY = j
+                If thisMcnk.areaid > 0 Then
+                    If dictAreaTable(thisMcnk.areaid) <> &HFFFF Then
+                        areaFlags(i, j) = dictAreaTable(thisMcnk.areaid)
                         Continue For
                     Else
-                        Core.Alert("File: " & filename & " Can't find area flag for areaid " & thisMCNK.areaid & " [" & i & "," & j & "].", Core.AlertNewLine.AddCRLF)
+                        Alert("File: " & filename & " Can't find area flag for areaid " & thisMcnk.areaid & " [" & i & "," & j & "].", MaNgosExtractorCore.AlertNewLine.ADD_CRLF)
                     End If
                 End If
 
-                area_flags(i, j) = &HFFFF
+                areaFlags(i, j) = &HFFFF
             Next
         Next
 
@@ -162,10 +162,10 @@ Public Class Export2Map
         ' Try pack area data
         '============================================
         Dim fullAreaData As Boolean = False
-        Dim areaflag As UInt32 = area_flags(0, 0)
-        For y As Integer = 0 To ADT_CELLS_PER_GRID - 1
-            For x As Integer = 0 To ADT_CELLS_PER_GRID - 1
-                If area_flags(y, x) <> areaflag Then
+        Dim areaflag As UInt32 = areaFlags(0, 0)
+        For y As Integer = 0 To AdtCellsPerGrid - 1
+            For x As Integer = 0 To AdtCellsPerGrid - 1
+                If areaFlags(y, x) <> areaflag Then
                     fullAreaData = True
                     Exit For
                 End If
@@ -175,29 +175,28 @@ Public Class Export2Map
         '          map.areaMapOffset = sizeof(map);
         'map.areaMapSize   = sizeof(map_areaHeader);
 
-        Dim areaHeader As map_areaHeader
-        areaHeader.fourcc = 1095910721 'AREA 
-        areaHeader.flags = 0
+        Dim areaHeader As MapAreaHeader
+        areaHeader.Fourcc = 1095910721 'AREA 
+        areaHeader.Flags = 0
         If (fullAreaData) Then
 
-            areaHeader.gridArea = 0
+            areaHeader.GridArea = 0
             'map.areaMapSize += sizeof(area_flags)
 
         Else
 
-            areaHeader.flags = MAP_AREA_NO_AREA
-            areaHeader.gridArea = CShort(thisMCNK.flags)
+            areaHeader.Flags = MapAreaNoArea
+            areaHeader.GridArea = CShort(thisMcnk.flags)
         End If
-
 
 
         '
         ' Get Height map from grid
         '
-        For i As Integer = 0 To ADT_CELLS_PER_GRID - 1
-            For j As Integer = 0 To ADT_CELLS_PER_GRID - 1
-                thisMCNK.IndexX = i
-                thisMCNK.IndexY = j
+        For i As Integer = 0 To AdtCellsPerGrid - 1
+            For j As Integer = 0 To AdtCellsPerGrid - 1
+                thisMcnk.IndexX = i
+                thisMcnk.IndexY = j
 
                 'Dim cell As Pointer(Of adt_MCNK) = cells.getMCNK(i, j)
                 'If Not cell Then
@@ -220,42 +219,42 @@ Public Class Export2Map
                 ' . . . . . . . .
 
                 ' Set map height as grid height
-                For y As Integer = 0 To ADT_CELL_SIZE
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        V9(cy, cx) = thisMCNK.position.Y ' cell.ypos
+                For y As Integer = 0 To AdtCellSize
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize
+                        Dim cx As Integer = j*AdtCellSize + x
+                        v9(cy, cx) = thisMcnk.position.Y ' cell.ypos
                     Next
                 Next
-                For y As Integer = 0 To ADT_CELL_SIZE - 1
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE - 1
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        V8(cy, cx) = thisMCNK.position.Y ' cell.ypos
+                For y As Integer = 0 To AdtCellSize - 1
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize - 1
+                        Dim cx As Integer = j*AdtCellSize + x
+                        v8(cy, cx) = thisMcnk.position.Y ' cell.ypos
                     Next
                 Next
                 ' Get custom height
-                Dim thisMCVT As MCVT = map.MCVT
+                Dim thisMcvt As Mcvt = map.Mcvt
 
 
                 'Dim v As Double = thisMCVT.height '  thisMCNK.ofsHeight ' cell.getMCVT()
-                If Not IsNothing(thisMCVT) Then
+                If Not IsNothing(thisMcvt) Then
                     Continue For
                 End If
                 ' get V9 height map
-                For y As Integer = 0 To ADT_CELL_SIZE
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        V9(cy, cx) += thisMCVT.height '.height_map(y * (ADT_CELL_SIZE * 2 + 1) + x)
+                For y As Integer = 0 To AdtCellSize
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize
+                        Dim cx As Integer = j*AdtCellSize + x
+                        v9(cy, cx) += thisMcvt.height '.height_map(y * (ADT_CELL_SIZE * 2 + 1) + x)
                     Next
                 Next
                 ' get V8 height map
-                For y As Integer = 0 To ADT_CELL_SIZE - 1
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE - 1
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        V8(cy, cx) += thisMCVT.height 'v.height_map(y * (ADT_CELL_SIZE * 2 + 1) + ADT_CELL_SIZE + 1 + x)
+                For y As Integer = 0 To AdtCellSize - 1
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize - 1
+                        Dim cx As Integer = j*AdtCellSize + x
+                        v8(cy, cx) += thisMcvt.height 'v.height_map(y * (ADT_CELL_SIZE * 2 + 1) + ADT_CELL_SIZE + 1 + x)
                     Next
                 Next
             Next
@@ -264,11 +263,11 @@ Public Class Export2Map
         '============================================
         ' Try pack height data
         '============================================
-        Dim maxHeight As Single = -20000
+        Dim maxHeight As Single = - 20000
         Dim minHeight As Single = 20000
-        For y As Integer = 0 To ADT_GRID_SIZE - 1
-            For x As Integer = 0 To ADT_GRID_SIZE - 1
-                Dim h As Single = V8(y, x)
+        For y As Integer = 0 To AdtGridSize - 1
+            For x As Integer = 0 To AdtGridSize - 1
+                Dim h As Single = v8(y, x)
                 If maxHeight < h Then
                     maxHeight = h
                 End If
@@ -277,9 +276,9 @@ Public Class Export2Map
                 End If
             Next
         Next
-        For y As Integer = 0 To ADT_GRID_SIZE
-            For x As Integer = 0 To ADT_GRID_SIZE
-                Dim h As Single = V9(y, x)
+        For y As Integer = 0 To AdtGridSize
+            For x As Integer = 0 To AdtGridSize
+                Dim h As Single = v9(y, x)
                 If maxHeight < h Then
                     maxHeight = h
                 End If
@@ -291,17 +290,17 @@ Public Class Export2Map
 
         ' Check for allow limit minimum height (not store height in deep ochean - allow save some memory)
         If CONF_allow_height_limit = True AndAlso minHeight < CONF_use_minHeight Then
-            For y As Integer = 0 To ADT_GRID_SIZE - 1
-                For x As Integer = 0 To ADT_GRID_SIZE - 1
-                    If V8(y, x) < CONF_use_minHeight Then
-                        V8(y, x) = CONF_use_minHeight
+            For y As Integer = 0 To AdtGridSize - 1
+                For x As Integer = 0 To AdtGridSize - 1
+                    If v8(y, x) < CONF_use_minHeight Then
+                        v8(y, x) = CONF_use_minHeight
                     End If
                 Next
             Next
-            For y As Integer = 0 To ADT_GRID_SIZE
-                For x As Integer = 0 To ADT_GRID_SIZE
-                    If V9(y, x) < CONF_use_minHeight Then
-                        V9(y, x) = CONF_use_minHeight
+            For y As Integer = 0 To AdtGridSize
+                For x As Integer = 0 To AdtGridSize
+                    If v9(y, x) < CONF_use_minHeight Then
+                        v9(y, x) = CONF_use_minHeight
                     End If
                 Next
             Next
@@ -317,60 +316,60 @@ Public Class Export2Map
         '        map.heightMapOffset = map.areaMapOffset + map.areaMapSize;
         'map.heightMapSize = sizeof(map_heightHeader);
 
-        Dim heightHeader As map_heightHeader
-        heightHeader.fourcc = 1296582484 'MGHT
-        heightHeader.flags = 0
-        heightHeader.gridHeight = minHeight
-        heightHeader.gridMaxHeight = maxHeight
+        Dim heightHeader As MapHeightHeader
+        heightHeader.Fourcc = 1296582484 'MGHT
+        heightHeader.Flags = 0
+        heightHeader.GridHeight = minHeight
+        heightHeader.GridMaxHeight = maxHeight
 
         If (maxHeight = minHeight) Then
-            heightHeader.flags = MAP_HEIGHT_NO_HEIGHT
+            heightHeader.Flags = MapHeightNoHeight
         End If
 
         ' Not need store if flat surface
-        If (CONF_allow_float_to_int And (maxHeight - minHeight) < CONF_flat_height_delta_limit) Then
-            heightHeader.flags = MAP_HEIGHT_NO_HEIGHT
+        If (ConfAllowFloatToInt And (maxHeight - minHeight) < ConfFlatHeightDeltaLimit) Then
+            heightHeader.Flags = MapHeightNoHeight
         End If
 
         ' Try store as packed in uint16 or uint8 values
-        If Not (heightHeader.flags And MAP_HEIGHT_NO_HEIGHT) Then
+        If Not (heightHeader.Flags And MapHeightNoHeight) Then
             Dim [step] As Single
             ' Try Store as uint values
-            If CONF_allow_float_to_int Then
+            If ConfAllowFloatToInt Then
                 Dim diff As Single = maxHeight - minHeight
-                If diff < CONF_float_to_int8_limit Then
+                If diff < ConfFloatToInt8Limit Then
                     ' As uint8 (max accuracy = CONF_float_to_int8_limit/256)
-                    heightHeader.flags = heightHeader.flags Or MAP_HEIGHT_AS_INT8
-                    [step] = selectUInt8StepStore(diff)
-                ElseIf diff < CONF_float_to_int16_limit Then
+                    heightHeader.Flags = heightHeader.Flags Or MapHeightAsInt8
+                    [step] = SelectUInt8StepStore(diff)
+                ElseIf diff < ConfFloatToInt16Limit Then
                     ' As uint16 (max accuracy = CONF_float_to_int16_limit/65536)
-                    heightHeader.flags = heightHeader.flags Or MAP_HEIGHT_AS_INT16
-                    [step] = selectUInt16StepStore(diff)
+                    heightHeader.Flags = heightHeader.Flags Or MapHeightAsInt16
+                    [step] = SelectUInt16StepStore(diff)
                 End If
             End If
 
             ' Pack it to int values if need
-            If heightHeader.flags And MAP_HEIGHT_AS_INT8 Then
-                For y As Integer = 0 To ADT_GRID_SIZE - 1
-                    For x As Integer = 0 To ADT_GRID_SIZE - 1
-                        uint8_V8(y, x) = CSByte((V8(y, x) - minHeight) * [step] + 0.5F)
+            If heightHeader.Flags And MapHeightAsInt8 Then
+                For y As Integer = 0 To AdtGridSize - 1
+                    For x As Integer = 0 To AdtGridSize - 1
+                        uint8V8(y, x) = CSByte((v8(y, x) - minHeight)*[step] + 0.5F)
                     Next
                 Next
-                For y As Integer = 0 To ADT_GRID_SIZE
-                    For x As Integer = 0 To ADT_GRID_SIZE
-                        uint8_V9(y, x) = CSByte((V9(y, x) - minHeight) * [step] + 0.5F)
+                For y As Integer = 0 To AdtGridSize
+                    For x As Integer = 0 To AdtGridSize
+                        uint8V9(y, x) = CSByte((v9(y, x) - minHeight)*[step] + 0.5F)
                     Next
                 Next
                 'map.heightMapSize += sizeof(uint8_V9) + sizeof(uint8_V8)
-            ElseIf heightHeader.flags And MAP_HEIGHT_AS_INT16 Then
-                For y As Integer = 0 To ADT_GRID_SIZE - 1
-                    For x As Integer = 0 To ADT_GRID_SIZE - 1
-                        uint16_V8(y, x) = CUInt((V8(y, x) - minHeight) * [step] + 0.5F)
+            ElseIf heightHeader.Flags And MapHeightAsInt16 Then
+                For y As Integer = 0 To AdtGridSize - 1
+                    For x As Integer = 0 To AdtGridSize - 1
+                        uint16V8(y, x) = CUInt((v8(y, x) - minHeight)*[step] + 0.5F)
                     Next
                 Next
-                For y As Integer = 0 To ADT_GRID_SIZE
-                    For x As Integer = 0 To ADT_GRID_SIZE
-                        uint16_V9(y, x) = CUInt((V9(y, x) - minHeight) * [step] + 0.5F)
+                For y As Integer = 0 To AdtGridSize
+                    For x As Integer = 0 To AdtGridSize
+                        uint16V9(y, x) = CUInt((v9(y, x) - minHeight)*[step] + 0.5F)
                     Next
                 Next
                 'map.heightMapSize += sizeof(uint16_V9) + sizeof(uint16_V8)
@@ -380,71 +379,64 @@ Public Class Export2Map
         End If
 
         ' Get from MCLQ chunk (old)
-        For i As Integer = 0 To ADT_CELLS_PER_GRID - 1
-            For j As Integer = 0 To ADT_CELLS_PER_GRID - 1
+        For i As Integer = 0 To AdtCellsPerGrid - 1
+            For j As Integer = 0 To AdtCellsPerGrid - 1
                 'Dim cell As Pointer(Of adt_MCNK) = cells.getMCNK(i, j)
                 'If Not cell Then
                 '    Continue For
                 'End If
-                Dim thisMCLQ As MCLQ = map.MCLQ
+                Dim thisMclq As Mclq = map.Mclq
 
-                Dim liquid(,) As liquid_data = thisMCLQ.liquid ' Double = thisMCLQ.liquid(i, j).height
+                Dim liquid(,) As LiquidData = thisMclq.liquid ' Double = thisMCLQ.liquid(i, j).height
                 Dim count As Integer = 0
 
                 'If Not liquid OrElse cell.sizeMCLQ <= 8 Then
                 '    Continue For
                 'End If
 
-                For y As Integer = 0 To ADT_CELL_SIZE - 1
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE - 1
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        If thisMCLQ.flags(y, x) <> &HF Then
-                            liquid_show(cy, cx) = True
-                            If thisMCLQ.flags(y, x) And (1 << 7) Then
-                                liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_DARK_WATER
+                For y As Integer = 0 To AdtCellSize - 1
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize - 1
+                        Dim cx As Integer = j*AdtCellSize + x
+                        If thisMclq.flags(y, x) <> &HF Then
+                            liquidShow(cy, cx) = True
+                            If thisMclq.flags(y, x) And (1 << 7) Then
+                                liquidFlags(i, j) = liquidFlags(i, j) Or MapLiquidTypeDarkWater
                             End If
                             count += 1
                         End If
                     Next
                 Next
 
-                Dim c_flag As UInt32 = thisMCLQ.flags(i, j)
-                If c_flag And (1 << 2) Then
-                    liquid_entry(i, j) = 1
+                Dim cFlag As UInt32 = thisMclq.flags(i, j)
+                If cFlag And (1 << 2) Then
+                    liquidEntry(i, j) = 1
                     ' water
-                    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_WATER
+                    liquidFlags(i, j) = liquidFlags(i, j) Or MapLiquidTypeWater
                 End If
-                If c_flag And (1 << 3) Then
-                    liquid_entry(i, j) = 2
+                If cFlag And (1 << 3) Then
+                    liquidEntry(i, j) = 2
                     ' ocean
-                    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_OCEAN
+                    liquidFlags(i, j) = liquidFlags(i, j) Or MapLiquidTypeOcean
                 End If
-                If c_flag And (1 << 4) Then
-                    liquid_entry(i, j) = 3
+                If cFlag And (1 << 4) Then
+                    liquidEntry(i, j) = 3
                     ' magma/slime
-                    liquid_flags(i, j) = liquid_flags(i, j) Or MAP_LIQUID_TYPE_MAGMA
+                    liquidFlags(i, j) = liquidFlags(i, j) Or MapLiquidTypeMagma
                 End If
 
-                If Not count AndAlso liquid_flags(i, j) Then
-                    Core.Alert("Wrong liquid detect in MCLQ chunk", Core.AlertNewLine.AddCRLF)
+                If Not count AndAlso liquidFlags(i, j) Then
+                    Alert("Wrong liquid detect in MCLQ chunk", AlertNewLine.ADD_CRLF)
                 End If
 
-                For y As Integer = 0 To ADT_CELL_SIZE
-                    Dim cy As Integer = i * ADT_CELL_SIZE + y
-                    For x As Integer = 0 To ADT_CELL_SIZE
-                        Dim cx As Integer = j * ADT_CELL_SIZE + x
-                        liquid_height(cy, cx) = thisMCLQ.liquid(y, x).height
+                For y As Integer = 0 To AdtCellSize
+                    Dim cy As Integer = i*AdtCellSize + y
+                    For x As Integer = 0 To AdtCellSize
+                        Dim cx As Integer = j*AdtCellSize + x
+                        liquidHeight(cy, cx) = thisMclq.liquid(y, x).Height
                     Next
                 Next
             Next
         Next
-
-
-
     End Sub
-
-
-
-
 End Class

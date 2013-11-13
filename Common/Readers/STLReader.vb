@@ -1,8 +1,6 @@
-Imports System.Collections.Generic
-Imports System.Linq
-Imports System.Text
-Imports System.IO
 Imports System.Runtime.InteropServices
+Imports System.IO
+Imports System.Text
 
 Namespace FileReader
     Structure MPQHeader
@@ -11,7 +9,7 @@ Namespace FileReader
         ' MPQ file magic number: 0xDEADBEEF
         Public fileTypeId As UInteger
         ' file type or version id (same for all *.gam files)
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unused As UInteger()
         ' always 0x00000000
     End Structure
@@ -20,42 +18,42 @@ Namespace FileReader
         ' sizeof 0x28
         Public stlFileId As UInteger
         ' Stl file Id
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=5)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 5)>
         Public unknown1 As UInteger()
         ' always 0x00000000
         Public headerSize As UInteger
         ' size (in bytes) of the StlHeader? (always 0x00000028)
         Public entriesSize As Integer
         ' size (in bytes) of the StlEntries
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unknown2 As UInteger()
         ' always 0x00000000
     End Structure
 
     Structure StlEntry
         ' sizeof 0x50
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unknown1 As UInteger()
         ' always 0x00000000
         Public string1offset As UInteger
         ' file offset for string1 (non-NLS key)
         Public string1size As UInteger
         ' size of string1
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unknown2 As UInteger()
         ' always 0x00000000
         Public string2offset As UInteger
         ' file offset for string2
         Public string2size As UInteger
         ' size of string2
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unknown3 As UInteger()
         ' always 0x00000000
         Public string3offset As UInteger
         ' file offset for string3
         Public string3size As UInteger
         ' size of string3
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=2)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 2)>
         Public unknown4 As UInteger()
         ' always 0x00000000
         Public string4offset As UInteger
@@ -64,13 +62,14 @@ Namespace FileReader
         ' size of string4
         Public unknown5 As UInteger
         ' always 0xFFFFFFFF
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=3)> _
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst := 3)>
         Public unknown6 As UInteger()
         ' always 0x00000000
     End Structure
 
     Class STLReader
         Implements IWowClientDBReader
+
         ReadOnly Property RecordsCount() As Integer Implements IWowClientDBReader.RecordsCount
             Get
                 Return m_RecordsCount
@@ -79,7 +78,9 @@ Namespace FileReader
             '    m_RecordsCount = value
             'End Set
         End Property
+
         Private m_RecordsCount As Integer
+
         ReadOnly Property FieldsCount() As Integer Implements IWowClientDBReader.FieldsCount
             Get
                 Return m_FieldsCount
@@ -88,7 +89,9 @@ Namespace FileReader
             '    m_FieldsCount = value
             'End Set
         End Property
+
         Private m_FieldsCount As Integer
+
         ReadOnly Property RecordSize() As Integer Implements IWowClientDBReader.RecordSize
             Get
                 Return m_RecordSize
@@ -97,7 +100,9 @@ Namespace FileReader
             '    m_RecordSize = value
             'End Set
         End Property
+
         Private m_RecordSize As Integer
+
         ReadOnly Property StringTableSize() As Integer Implements IWowClientDBReader.StringTableSize
             Get
                 Return m_StringTableSize
@@ -106,6 +111,7 @@ Namespace FileReader
             '    m_StringTableSize = value
             'End Set
         End Property
+
         Private m_StringTableSize As Integer
 
         ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDBReader.StringTable
@@ -116,6 +122,7 @@ Namespace FileReader
             '    m_StringTable = value
             'End Set
         End Property
+
         Private m_StringTable As Dictionary(Of Integer, String)
 
         Private m_rows As Byte()()
@@ -136,10 +143,10 @@ Namespace FileReader
             reader = FromFile(fileName)
 
             'Dim mHdr As MPQHeader = reader.ReadStruct(Of MPQHeader)()
-            Dim sHdr As StlHeader = reader.ReadStruct(Of StlHeader)()
+            Dim sHdr As StlHeader = reader.ReadStruct (Of StlHeader)()
             'StlEntry sEntry = reader.ReadStruct<StlEntry>();
 
-            m_RecordsCount = sHdr.entriesSize \ &H50
+            m_RecordsCount = sHdr.entriesSize\&H50
 
             m_rows = New Byte(RecordsCount - 1)() {}
 

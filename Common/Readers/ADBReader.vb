@@ -1,4 +1,3 @@
-Imports System.Collections.Generic
 Imports System.IO
 Imports System.Text
 
@@ -16,7 +15,9 @@ Namespace FileReader
             '    m_RecordsCount = value
             'End Set
         End Property
+
         Private m_RecordsCount As Integer
+
         ReadOnly Property FieldsCount() As Integer Implements IWowClientDBReader.FieldsCount
             Get
                 Return m_FieldsCount
@@ -25,7 +26,9 @@ Namespace FileReader
             '    m_FieldsCount = value
             'End Set
         End Property
+
         Private m_FieldsCount As Integer
+
         ReadOnly Property RecordSize() As Integer Implements IWowClientDBReader.RecordSize
             Get
                 Return m_RecordSize
@@ -34,7 +37,9 @@ Namespace FileReader
             '    m_RecordSize = value
             'End Set
         End Property
+
         Private m_RecordSize As Integer
+
         ReadOnly Property StringTableSize() As Integer Implements IWowClientDBReader.StringTableSize
             Get
                 Return m_StringTableSize
@@ -43,6 +48,7 @@ Namespace FileReader
             '    m_StringTableSize = value
             'End Set
         End Property
+
         Private m_StringTableSize As Integer
 
         ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDBReader.StringTable
@@ -53,6 +59,7 @@ Namespace FileReader
             '    m_StringTable = Value
             'End Set
         End Property
+
         Private m_StringTable As Dictionary(Of Integer, String)
 
         Private m_rows As Byte()()
@@ -101,10 +108,10 @@ Namespace FileReader
                 Dim unk5 As Integer = reader.ReadInt32()
                 ' new field in WCH2
                 If unk3 <> 0 Then
-                    reader.ReadBytes(unk3 * 4 - HeaderSize)
+                    reader.ReadBytes(unk3*4 - HeaderSize)
                     ' an index for rows
                     ' a memory allocation bank
-                    reader.ReadBytes(unk3 * 2 - HeaderSize * 2)
+                    reader.ReadBytes(unk3*2 - HeaderSize*2)
                 End If
 
                 m_rows = New Byte(RecordsCount - 1)() {}

@@ -1,4 +1,3 @@
-Imports System.Collections.Generic
 Imports System.IO
 Imports System.Text
 
@@ -16,7 +15,9 @@ Namespace FileReader
             '    m_RecordsCount = Value
             'End Set
         End Property
+
         Private m_RecordsCount As Integer
+
         ReadOnly Property FieldsCount() As Integer Implements IWowClientDBReader.FieldsCount
             Get
                 Return m_FieldsCount
@@ -25,7 +26,9 @@ Namespace FileReader
             '	m_FieldsCount = Value
             'End Set
         End Property
+
         Private m_FieldsCount As Integer
+
         ReadOnly Property RecordSize() As Integer Implements IWowClientDBReader.RecordSize
             Get
                 Return m_RecordSize
@@ -34,7 +37,9 @@ Namespace FileReader
             '	m_RecordSize = Value
             'End Set
         End Property
+
         Private m_RecordSize As Integer
+
         ReadOnly Property StringTableSize() As Integer Implements IWowClientDBReader.StringTableSize
             Get
                 Return m_StringTableSize
@@ -43,6 +48,7 @@ Namespace FileReader
             '    m_StringTableSize = Value
             'End Set
         End Property
+
         Private m_StringTableSize As Integer
 
         ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDBReader.StringTable
@@ -53,6 +59,7 @@ Namespace FileReader
             '	m_StringTable = Value
             'End Set
         End Property
+
         Private m_StringTable As Dictionary(Of Integer, String)
 
         Private m_rows As Byte()()
@@ -99,21 +106,21 @@ Namespace FileReader
                 ' new field in WDB2
                 If build > 12880 Then
                     ' new extended header
-                    Dim MinId As Integer = reader.ReadInt32()
+                    Dim minId As Integer = reader.ReadInt32()
                     ' new field in WDB2
-                    Dim MaxId As Integer = reader.ReadInt32()
+                    Dim maxId As Integer = reader.ReadInt32()
                     ' new field in WDB2
                     Dim locale As Integer = reader.ReadInt32()
                     ' new field in WDB2
                     Dim unk5 As Integer = reader.ReadInt32()
                     ' new field in WDB2
-                    If MaxId <> 0 Then
-                        Dim diff = MaxId - MinId + 1
+                    If maxId <> 0 Then
+                        Dim diff = maxId - minId + 1
                         ' blizzard is weird people...
-                        reader.ReadBytes(diff * 4)
+                        reader.ReadBytes(diff*4)
                         ' an index for rows
                         ' a memory allocation bank
-                        reader.ReadBytes(diff * 2)
+                        reader.ReadBytes(diff*2)
                     End If
                 End If
 

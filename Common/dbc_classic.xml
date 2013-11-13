@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
+
 <root>
   <Config>
     <Lang_Count>12</Lang_Count>
@@ -953,19 +954,18 @@
     <ItemClass>
       <include>Y</include>
       <tablename>dbc_ItemClass</tablename>
-      <fieldcount>12</fieldcount>
+      <fieldcount>11</fieldcount>
       <field type="int" name="classID" include="y" />
       <field type="int" name="col1" include="y" />
       <field type="text" name="col2" include="y" />
       <field type="text" name="classname" include="y" />
-      <field type="text" name="col4" include="y" />
-      <field type="text" name="col5" include="y" />
-      <field type="text" name="col6" include="y" />
-      <field type="text" name="col7" include="y" />
-      <field type="text" name="col8" include="y" />
-      <field type="text" name="col9" include="y" />
-      <field type="text" name="col10" include="y" />
-      <field type="bigint" name="col11" include="y" />
+      <field type="text" name="classname1" include="y" />
+      <field type="text" name="classname2" include="y" />
+      <field type="text" name="classname3" include="y" />
+      <field type="text" name="classname4" include="y" />
+      <field type="text" name="classname5" include="y" />
+      <field type="text" name="classname6" include="y" />
+      <field type="text" name="classname7" include="y" />
     </ItemClass>
     <ItemDisplayInfo>
       <include>Y</include>

@@ -1,9 +1,8 @@
-﻿Imports System
+﻿Imports AD2.Core
 Imports System.IO
-Imports AD2.Core
+Imports System.Threading
 
-Module AD2
-
+Module Ad2
     Sub Main()
         Console.WriteLine(" ")
         Console.WriteLine("MaNGOSExtractor{0} CommandLine", MaNGOSExtractorVersion)
@@ -22,22 +21,23 @@ Module AD2
             Console.WriteLine("-h create .H files for each .DBC, requires -o switch")
             End
         Else
-            Dim strExtractionLevel As String = ""
+            Dim strExtractionLevel As String
             Dim strInputFolder As String = ""
             Dim strOutputFolder As String = ""
             Dim intMaxCommands As Integer = My.Application.CommandLineArgs.Count - 1
-            Dim blnCMDError As Boolean = False
+            Dim blnCmdError As Boolean = False
             Dim blnExtract As Boolean = False
-            Dim blnExportToSQL As Boolean = False
-            Dim blnExportToCSV As Boolean = False
-            Dim blnExportToXML As Boolean = False
-            Dim blnExportToMD As Boolean = False
+            Dim blnExportToSql As Boolean = False
+            Dim blnExportToCsv As Boolean = False
+            Dim blnExportToXml As Boolean = False
+            Dim blnExportToMd As Boolean = False
             Dim blnExportToH As Boolean = False
-            For Commands As Integer = 0 To intMaxCommands
-                Select Case My.Application.CommandLineArgs(Commands)
+
+            For commands As Integer = 0 To intMaxCommands
+                Select Case My.Application.CommandLineArgs(commands)
                     Case "-e"
-                        If Commands < intMaxCommands Then
-                            strExtractionLevel = My.Application.CommandLineArgs(Commands + 1)
+                        If commands < intMaxCommands Then
+                            strExtractionLevel = My.Application.CommandLineArgs(commands + 1)
                         Else
                             strExtractionLevel = ""
                         End If
@@ -54,12 +54,12 @@ Module AD2
                                 blnExtract = True
                             Case Else
                                 Console.WriteLine("Extraction Selected: *ERROR* - Invalid Option '" & strExtractionLevel & "'")
-                                blnCMDError = True
+                                blnCmdError = True
                         End Select
-                        Commands = Commands + 1
+                        commands = commands + 1
                     Case "-i"
-                        If Commands < intMaxCommands Then
-                            strInputFolder = My.Application.CommandLineArgs(Commands + 1)
+                        If commands < intMaxCommands Then
+                            strInputFolder = My.Application.CommandLineArgs(commands + 1)
                         Else
                             strInputFolder = ""
                         End If
@@ -68,14 +68,14 @@ Module AD2
                             Console.WriteLine("Source Folder: " & strInputFolder)
                         Else
                             Console.WriteLine("Source Folder: *ERROR* - Folder '" & strInputFolder & "' was not found (or accessible)")
-                            blnCMDError = True
+                            blnCmdError = True
 
                         End If
-                        Commands = Commands + 1
+                        commands = commands + 1
 
                     Case "-o"
-                        If Commands < intMaxCommands Then
-                            strOutputFolder = My.Application.CommandLineArgs(Commands + 1)
+                        If commands < intMaxCommands Then
+                            strOutputFolder = My.Application.CommandLineArgs(commands + 1)
                         Else
                             strOutputFolder = ""
                         End If
@@ -88,62 +88,62 @@ Module AD2
                                 Console.WriteLine("Output Folder: " & strOutputFolder)
                             Catch ex As Exception
                                 Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be created")
-                                blnCMDError = True
+                                blnCmdError = True
                             End Try
                         End If
-                        Commands = Commands + 1
+                        commands = commands + 1
                     Case "-s"
-                        blnExportToSQL = True
+                        blnExportToSql = True
                         If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
-                            blnCMDError = True
+                            blnCmdError = True
                         End If
                     Case "-c"
-                        blnExportToCSV = True
+                        blnExportToCsv = True
                         If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
-                            blnCMDError = True
+                            blnCmdError = True
                         End If
                     Case "-x"
-                        blnExportToXML = True
+                        blnExportToXml = True
                         If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
-                            blnCMDError = True
+                            blnCmdError = True
                         End If
                     Case "-m"
-                        blnExportToMD = True
+                        blnExportToMd = True
                         If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
-                            blnCMDError = True
+                            blnCmdError = True
                         End If
                     Case "-h"
                         blnExportToH = True
                         If Directory.Exists(strOutputFolder) = False Then
                             Console.WriteLine("Output Folder: *ERROR* - Folder '" & strOutputFolder & "' could not be found")
-                            blnCMDError = True
+                            blnCmdError = True
                         End If
                     Case Else
-                        Console.WriteLine("Command={0}", My.Application.CommandLineArgs(Commands))
+                        Console.WriteLine("Command={0}", My.Application.CommandLineArgs(commands))
                 End Select
             Next
 
             'If any parameters have been flagged as having an error, bail out
-            If blnExportToSQL = True And strOutputFolder = "" And blnExtract = False Then
+            If blnExportToSql = True And strOutputFolder = "" And blnExtract = False Then
                 Console.WriteLine("*ERROR* -o {output folder} is required")
-                blnCMDError = True
-            ElseIf blnExportToCSV = True And strOutputFolder = "" And blnExtract = False Then
+                blnCmdError = True
+            ElseIf blnExportToCsv = True And strOutputFolder = "" And blnExtract = False Then
                 Console.WriteLine("*ERROR* -o {output folder} is required")
-                blnCMDError = True
+                blnCmdError = True
             ElseIf blnExportToH = True And strOutputFolder = "" Then
                 Console.WriteLine("*ERROR* -o {output folder} is required")
-                blnCMDError = True
+                blnCmdError = True
             ElseIf blnExtract = True And strOutputFolder = "" Then
                 Console.WriteLine("*ERROR* -o {output folder} is required")
-                blnCMDError = True
+                blnCmdError = True
             End If
 
 
-            If blnCMDError = True Then End
+            If blnCmdError = True Then End
 
             'At this stage we should have the options we need plus parameters and paths
             Dim colBaseFiles As New SortedList()     'Collection containing all the base files
@@ -154,13 +154,13 @@ Module AD2
             Dim myFolders As DirectoryInfo
 
             If Directory.Exists(strInputFolder) = False Then
-                Alert("Warcraft folder '" & strInputFolder & "' can not be located", AlertNewLine.AddCRLF)
+                Alert("Warcraft folder '" & strInputFolder & "' can not be located", AlertNewLine.ADD_CRLF)
                 Exit Sub
             End If
 
             ReadWarcraftExe(strInputFolder & "/Wow.exe")
             If FullVersion <> "" Then
-                Alert("Warcraft Version v" & FullVersion & " Build " & BuildNo, AlertNewLine.AddCRLF)
+                Alert("Warcraft Version v" & FullVersion & " Build " & BuildNo, AlertNewLine.ADD_CRLF)
             End If
 
             If blnExtract = True Then
@@ -197,20 +197,20 @@ Module AD2
 
 
                 For Each strItem As DictionaryEntry In colMainFiles
-                    Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                    Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                     Try
                         ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.ADD_CRLF)
                     End Try
                 Next
 
                 For Each strItem As DictionaryEntry In colMainFiles
-                    Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                    Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                     Try
                         ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.ADD_CRLF)
                     End Try
                 Next
 
@@ -220,18 +220,18 @@ Module AD2
                     Try
                         ExtractDBCFiles(strItem.Value, "*.db?", strOutputFolder)
                     Catch ex As Exception
-                        Alert(ex.Message, AlertNewLine.AddCRLF)
+                        Alert(ex.Message, AlertNewLine.ADD_CRLF)
                     End Try
-                    Threading.Thread.Sleep(0)
+                    Thread.Sleep(0)
                 Next
-                Alert("Extraction Finished", AlertNewLine.AddCRLF)
+                Alert("Extraction Finished", AlertNewLine.ADD_CRLF)
             End If
 
 
             'Pass the Parameters to the export routine
-            If blnExportToSQL = True Or blnExportToCSV = True Or blnExportToXML = True Or blnExportToMD = True Or blnExportToH = True Then
-                ExportDBCFiles(strInputFolder, strOutputFolder, blnExportToCSV, blnExportToSQL, blnExportToXML, blnExportToMD, blnExportToH)
-                Alert("Export Finished", AlertNewLine.AddCRLF)
+            If blnExportToSql = True Or blnExportToCsv = True Or blnExportToXml = True Or blnExportToMd = True Or blnExportToH = True Then
+                ExportDBCFiles(strInputFolder, strOutputFolder, blnExportToCsv, blnExportToSql, blnExportToXml, blnExportToMd, blnExportToH)
+                Alert("Export Finished", AlertNewLine.ADD_CRLF)
             End If
 
             End
@@ -266,15 +266,13 @@ Module AD2
                 Return 0
             End Get
             Set(value As Integer)
-
             End Set
         End Property
 
         ReadOnly Property Count() As Integer
             Get
-                Return -1
+                Return - 1
             End Get
         End Property
-
     End Class
 End Module

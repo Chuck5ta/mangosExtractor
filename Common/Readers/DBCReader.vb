@@ -1,14 +1,13 @@
-Imports System.Collections.Generic
 Imports System.IO
 Imports System.Text
 
 Namespace FileReader
-    Class DBCReader
-        Implements IWowClientDBReader
+    Class DbcReader
+        Implements IWowClientDbReader
         Private Const HeaderSize As UInteger = 20
-        Private Const DBCFmtSig As UInteger = &H43424457
+        Private Const DbcFmtSig As UInteger = &H43424457
         ' WDBC
-        ReadOnly Property RecordsCount() As Integer Implements IWowClientDBReader.RecordsCount
+        ReadOnly Property RecordsCount() As Integer Implements IWowClientDbReader.RecordsCount
             Get
                 Return m_RecordsCount
             End Get
@@ -18,7 +17,8 @@ Namespace FileReader
         End Property
 
         Private m_RecordsCount As Integer
-        ReadOnly Property FieldsCount() As Integer Implements IWowClientDBReader.FieldsCount
+
+        ReadOnly Property FieldsCount() As Integer Implements IWowClientDbReader.FieldsCount
             Get
                 Return m_FieldsCount
             End Get
@@ -28,7 +28,8 @@ Namespace FileReader
         End Property
 
         Private m_FieldsCount As Integer
-        ReadOnly Property RecordSize() As Integer Implements IWowClientDBReader.RecordSize
+
+        ReadOnly Property RecordSize() As Integer Implements IWowClientDbReader.RecordSize
             Get
                 Return m_RecordSize
             End Get
@@ -36,8 +37,10 @@ Namespace FileReader
             '	m_RecordSize = Value
             'End Set
         End Property
+
         Private m_RecordSize As Integer
-        ReadOnly Property StringTableSize() As Integer Implements IWowClientDBReader.StringTableSize
+
+        ReadOnly Property StringTableSize() As Integer Implements IWowClientDbReader.StringTableSize
             Get
                 Return m_StringTableSize
             End Get
@@ -45,9 +48,10 @@ Namespace FileReader
             '	m_StringTableSize = Value
             'End Set
         End Property
+
         Private m_StringTableSize As Integer
 
-        ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDBReader.StringTable
+        ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDbReader.StringTable
             Get
                 Return m_StringTable
             End Get
@@ -55,11 +59,12 @@ Namespace FileReader
             '	m_StringTable = Value
             'End Set
         End Property
+
         Private m_StringTable As Dictionary(Of Integer, String)
 
         Private m_rows As Byte()()
 
-        Public Function GetRowAsByteArray(row As Integer) As Byte() Implements IWowClientDBReader.GetRowAsByteArray
+        Public Function GetRowAsByteArray(row As Integer) As Byte() Implements IWowClientDbReader.GetRowAsByteArray
             Try
                 If m_rows.Count() > 0 Then
                     Return m_rows(row)
@@ -69,10 +74,9 @@ Namespace FileReader
             Catch ex As Exception
                 Return Nothing
             End Try
-
         End Function
 
-        Default Public ReadOnly Property Item(row As Integer) As BinaryReader Implements IWowClientDBReader.Item
+        Default Public ReadOnly Property Item(row As Integer) As BinaryReader Implements IWowClientDbReader.Item
             Get
                 Return New BinaryReader(New MemoryStream(m_rows(row)), Encoding.UTF8)
             End Get
@@ -98,7 +102,7 @@ Namespace FileReader
                 For i As Integer = 0 To RecordsCount - 1
                     m_rows(i) = reader.ReadBytes(RecordSize)
 #If _MyType <> "Console" Then
-                    Application.doevents()
+                    Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If

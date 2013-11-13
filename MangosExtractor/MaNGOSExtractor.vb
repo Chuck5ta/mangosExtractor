@@ -1,19 +1,18 @@
-﻿Imports System
+﻿Imports System.IO
 Imports System.Data
-Imports System.IO
 Imports MangosExtractor.Core
 
 Public Class MaNGOSExtractor
-    ''' <summary>
-    ''' Starts the DBC Extraction process
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub BtnStartDbcClick(sender As Object, e As EventArgs) Handles btnStartDBC.Click
+''' <summary>
+'''     Starts the DBC Extraction process
+''' </summary>
+''' <param name="sender"></param>
+''' <param name="e"></param>
+''' <remarks></remarks>
+                            Private Sub BtnStartDbcClick(sender As Object, e As EventArgs) Handles btnStartDBC.Click
         lstMainLog.Items.Clear()
         alertlist = lstMainLog
-        Cursor = Windows.Forms.Cursors.WaitCursor
+        Cursor = Cursors.WaitCursor
         btnStartDBC.Enabled = False
 
         Dim colBaseFiles As New SortedList()    'Collection containing all the base files
@@ -24,15 +23,15 @@ Public Class MaNGOSExtractor
         Dim myFolders As DirectoryInfo
 
         If Directory.Exists(txtBaseFolder.Text) = False Then
-            Alert("Warcraft folder '" & txtBaseFolder.Text & "' can not be located", AlertNewLine.AddCRLF)
-            Cursor = Windows.Forms.Cursors.Default
+            Alert("Warcraft folder '" & txtBaseFolder.Text & "' can not be located", AlertNewLine.ADD_CRLF)
+            Cursor = Cursors.Default
             btnStartDBC.Enabled = True
             Exit Sub
         End If
 
         ReadWarcraftExe(txtBaseFolder.Text & "/Wow.exe")
         If FullVersion <> "" Then
-            Alert("Warcraft Version v" & FullVersion & " Build " & BuildNo, AlertNewLine.AddCRLF)
+            Alert("Warcraft Version v" & FullVersion & " Build " & BuildNo, AlertNewLine.ADD_CRLF)
         End If
 
         If chkDBC.Checked = True Or chkExtractMaps.Checked = True Or chkExtractWMO.Checked = True Or chkExtractWDT.Checked = True Or chkExtractADT.Checked = True Then
@@ -76,11 +75,11 @@ Public Class MaNGOSExtractor
 
         If chkDBC.Checked = True Then
             For Each strItem As DictionaryEntry In colBaseFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractDBCFiles(strItem.Value, "*.db?", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -90,11 +89,11 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colMainFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractDBCFiles(strItem.Value, "*.db?", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -104,12 +103,12 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colUpdateFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
 
                 Try
                     ExtractDBCFiles(strItem.Value, "*.db?", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -117,16 +116,16 @@ Public Class MaNGOSExtractor
                 Threading.Thread.Sleep(0)
 #End If
             Next
-            Alert("Extraction Finished", AlertNewLine.AddCRLF)
+            Alert("Extraction Finished", AlertNewLine.ADD_CRLF)
         End If
 
         If chkExtractADT.Checked = True Then
             For Each strItem As DictionaryEntry In colBaseFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractADTFiles(strItem.Value, "*.adt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -141,11 +140,11 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colMainFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractADTFiles(strItem.Value, "*.adt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -160,12 +159,12 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colUpdateFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
 
                 Try
                     ExtractADTFiles(strItem.Value, "*.adt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -185,7 +184,7 @@ Public Class MaNGOSExtractor
             Dim dtMaps As New DataTable
             Dim dictMaps As New Dictionary(Of Integer, String)
 
-            Alert("Loading Maps: ", AlertNewLine.AddCRLF)
+            Alert("Loading Maps: ", AlertNewLine.ADD_CRLF)
 
             dtMaps = loadDBCtoDataTable(txtOutputFolder.Text & "/DBFilesClient" & "/map.dbc")
             'Alert(dtMaps.Rows.Count() - 2 & " Maps Loaded", AlertNewLine.AddCRLF)
@@ -199,7 +198,7 @@ Public Class MaNGOSExtractor
             Dim dtAreaTable As New DataTable
             Dim dictAreaTable As New Dictionary(Of Integer, String)
 
-            Alert("Loading Areas: ", AlertNewLine.AddCRLF)
+            Alert("Loading Areas: ", AlertNewLine.ADD_CRLF)
 
             dtAreaTable = loadDBCtoDataTable(txtOutputFolder.Text & "/DBFilesClient" & "/AreaTable.dbc")
             'Alert(dtAreaTable.Rows.Count() - 2 & " Areas Loaded", AlertNewLine.AddCRLF)
@@ -213,7 +212,7 @@ Public Class MaNGOSExtractor
             Dim dtLiquidType As New DataTable
             Dim dictLiquidType As New Dictionary(Of Integer, Integer)
 
-            Alert("Loading Liquid Types: ", AlertNewLine.AddCRLF)
+            Alert("Loading Liquid Types: ", AlertNewLine.ADD_CRLF)
             dtLiquidType = loadDBCtoDataTable(txtOutputFolder.Text & "/DBFilesClient" & "/LiquidType.dbc")
             'Alert(dtLiquidType.Rows.Count() - 2 & " Liquids Loaded", AlertNewLine.AddCRLF)
 
@@ -222,10 +221,10 @@ Public Class MaNGOSExtractor
                 dictLiquidType.Add(dtLiquidType.Rows(counter)(0), dtLiquidType.Rows(counter)(3))
             Next
 
-            Alert("Extraction Finished", AlertNewLine.AddCRLF)
+            Alert("Extraction Finished", AlertNewLine.ADD_CRLF)
 
 
-            Alert(".... Converting Maps", AlertNewLine.AddCRLF)
+            Alert(".... Converting Maps", AlertNewLine.ADD_CRLF)
             Const adtRes As Integer = 64
             Dim mapKey As String = "000"
             Dim mapX As String = "00"
@@ -237,12 +236,12 @@ Public Class MaNGOSExtractor
                 Directory.CreateDirectory(txtOutputFolder.Text & "maps/")
             End If
             For Each thisMap As KeyValuePair(Of Integer, String) In dictMaps
-                Alert(" Extracting..." & thisMap.Value, AlertNewLine.AddCRLF)
+                Alert(" Extracting..." & thisMap.Value, AlertNewLine.ADD_CRLF)
                 For x As Integer = 0 To adtRes
                     For y As Integer = 0 To adtRes
                         adTfilename = txtOutputFolder.Text & "World/maps/" & thisMap.Value & "/" & thisMap.Value & "_" & x & "_" & y & ".adt"
                         If My.Computer.FileSystem.FileExists(adTfilename) = True Then
-                            Alert("Reading from: " & adTfilename, AlertNewLine.AddCRLF)
+                            Alert("Reading from: " & adTfilename, AlertNewLine.ADD_CRLF)
                             mapKey = thisMap.Key.ToString() '"000"
                             If mapKey.Length() = 1 Then mapKey = "00" & mapKey
                             If mapKey.Length() = 2 Then mapKey = "0" & mapKey
@@ -271,11 +270,11 @@ Public Class MaNGOSExtractor
 
         If chkExtractWMO.Checked = True Then
             For Each strItem As DictionaryEntry In colBaseFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractFilesGeneric(strItem.Value, "*.wmo", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -290,11 +289,11 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colMainFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractFilesGeneric(strItem.Value, "*.wmo", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -309,12 +308,12 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colUpdateFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
 
                 Try
                     ExtractFilesGeneric(strItem.Value, "*.wmo", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -331,11 +330,11 @@ Public Class MaNGOSExtractor
 
         If chkExtractWDT.Checked = True Then
             For Each strItem As DictionaryEntry In colBaseFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractWDTFiles(strItem.Value, "*.wdt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -350,11 +349,11 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colMainFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
                 Try
                     ExtractWDTFiles(strItem.Value, "*.wdt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -369,12 +368,12 @@ Public Class MaNGOSExtractor
             Next
 
             For Each strItem As DictionaryEntry In colUpdateFiles
-                Alert("Reading: " & strItem.Value, AlertNewLine.AddCRLF)
+                Alert("Reading: " & strItem.Value, AlertNewLine.ADD_CRLF)
 
                 Try
                     ExtractWDTFiles(strItem.Value, "*.wdt", txtOutputFolder.Text)
                 Catch ex As Exception
-                    Alert(ex.Message, AlertNewLine.AddCRLF)
+                    Alert(ex.Message, AlertNewLine.ADD_CRLF)
                 End Try
                 'Try
                 '    ExtractFilesGeneric(strItem.Value, "*.wdt", txtOutputFolder.Text)
@@ -390,67 +389,66 @@ Public Class MaNGOSExtractor
         End If
 
 
-
-
         If chkCSV.Checked = True Or chkSQL.Checked = True Or chkExportXML.Checked = True Or chkExportMD.Checked = True Or chkExportH.Checked = True Then
             'Now that we have all the DBC's extracted and patched, we need to check the export options and export data
             ExportDBCFiles(txtBaseFolder.Text, txtOutputFolder.Text, chkCSV.Checked, chkSQL.Checked, chkExportXML.Checked, chkExportMD.Checked, chkExportH.Checked)
-            Alert("Finished Exporting", AlertNewLine.AddCRLF)
+            Alert("Finished Exporting", AlertNewLine.ADD_CRLF)
         End If
 
-        Cursor = Windows.Forms.Cursors.Default
+        Cursor = Cursors.Default
         btnStartDBC.Enabled = True
 
-        Alert("Finished", AlertNewLine.AddCRLF)
+        Alert("Finished", AlertNewLine.ADD_CRLF)
     End Sub
 
-    ''' <summary>
-    ''' Exits the Application
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub BtnQuit_Click(sender As Object, e As EventArgs) Handles BtnQuit.Click
+                            
+                            ''' <summary>
+                            '''     Exits the Application
+                            ''' </summary>
+                            ''' <param name="sender"></param>
+                            ''' <param name="e"></param>
+                            ''' <remarks></remarks>
+                            Private Sub BtnQuit_Click(sender As Object, e As EventArgs) Handles BtnQuit.Click
         End
     End Sub
 
-    ''' <summary>
-    ''' Set runningAsGui = true and set the alertlist to main screen listbox
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    ''' <remarks></remarks>
-    Private Sub MaNgosExtractorLoad(sender As Object, e As EventArgs) Handles Me.Load
+                            
+                            ''' <summary>
+                            '''     Set runningAsGui = true and set the alertlist to main screen listbox
+                            ''' </summary>
+                            ''' <param name="sender"></param>
+                            ''' <param name="e"></param>
+                            ''' <remarks></remarks>
+                            Private Sub MaNgosExtractorLoad(sender As Object, e As EventArgs) Handles Me.Load
         Text = "MaNGOSExtractor " & MaNGOSExtractorVersion
-        runAsGui = True
+        runAsGui() = True
         alertlist = lstMainLog
 
-        Alert("Welcome to MaNGOS Extractor " & MaNGOSExtractorVersion & " for all versions of MaNGOS", AlertNewLine.AddCRLF)
-        Alert("============================================================", AlertNewLine.AddCRLF)
-        Alert("", AlertNewLine.AddCRLF)
-        Alert("What is working:-", AlertNewLine.AddCRLF)
-        Alert("----------------------------------", AlertNewLine.AddCRLF)
-        Alert("Extract and patch DBC", AlertNewLine.AddCRLF)
-        Alert("Export to SQL/CSV/XML/MD", AlertNewLine.AddCRLF)
-        Alert("- CSV now includes column headings", AlertNewLine.AddCRLF)
-        Alert("Extract and patch ADT *", AlertNewLine.AddCRLF)
-        Alert("Extract WMO/MDL *", AlertNewLine.AddCRLF)
-        Alert("Extract and patch WDT *", AlertNewLine.AddCRLF)
+        Alert("Welcome to MaNGOS Extractor " & MaNGOSExtractorVersion & " for all versions of MaNGOS", AlertNewLine.ADD_CRLF)
+        Alert("============================================================", AlertNewLine.ADD_CRLF)
+        Alert("", AlertNewLine.ADD_CRLF)
+        Alert("What is working:-", AlertNewLine.ADD_CRLF)
+        Alert("----------------------------------", AlertNewLine.ADD_CRLF)
+        Alert("Extract and patch DBC", AlertNewLine.ADD_CRLF)
+        Alert("Export to SQL/CSV/XML/MD", AlertNewLine.ADD_CRLF)
+        Alert("- CSV now includes column headings", AlertNewLine.ADD_CRLF)
+        Alert("Extract and patch ADT *", AlertNewLine.ADD_CRLF)
+        Alert("Extract WMO/MDL *", AlertNewLine.ADD_CRLF)
+        Alert("Extract and patch WDT *", AlertNewLine.ADD_CRLF)
 
-        Alert("", AlertNewLine.AddCRLF)
-        Alert("What is not working:-", AlertNewLine.AddCRLF)
-        Alert("----------------------------------", AlertNewLine.AddCRLF)
-        Alert("Extract Maps is WIP", AlertNewLine.AddCRLF)
-        Alert("Extract VMaps", AlertNewLine.AddCRLF)
-        Alert("", AlertNewLine.AddCRLF)
-        Alert("* Equivilent to VMAP Extractor Functionality", AlertNewLine.AddCRLF)
-
+        Alert("", AlertNewLine.ADD_CRLF)
+        Alert("What is not working:-", AlertNewLine.ADD_CRLF)
+        Alert("----------------------------------", AlertNewLine.ADD_CRLF)
+        Alert("Extract Maps is WIP", AlertNewLine.ADD_CRLF)
+        Alert("Extract VMaps", AlertNewLine.ADD_CRLF)
+        Alert("", AlertNewLine.ADD_CRLF)
+        Alert("* Equivilent to VMAP Extractor Functionality", AlertNewLine.ADD_CRLF)
     End Sub
 
     Private Sub BrnWdbClick(sender As Object, e As EventArgs) Handles brnWDB.Click
         lstMainLog.Items.Clear()
         alertlist = lstMainLog
-        Cursor = Windows.Forms.Cursors.WaitCursor
+        Cursor = Cursors.WaitCursor
         brnWDB.Enabled = False
         'Dim colBaseFiles As New SortedList()    'Collection containing all the base files
         'Dim colMainFiles As New SortedList()    'Collection containing all the main files
@@ -460,7 +458,7 @@ Public Class MaNGOSExtractor
         Dim myFolders As DirectoryInfo
 
         If Directory.Exists(txtBaseFolder.Text) = False Then
-            Alert("Warcraft folder '" & txtBaseFolder.Text & "' can not be located", AlertNewLine.AddCRLF)
+            Alert("Warcraft folder '" & txtBaseFolder.Text & "' can not be located", AlertNewLine.ADD_CRLF)
             Exit Sub
         End If
 
@@ -480,7 +478,7 @@ Public Class MaNGOSExtractor
 
             'Load the entire DBC into a DataTable to be processed by both exports
             '                If chkCSV.Checked = True Or chkSQL.Checked = True Then
-            Alert("Loading WBC " & file.Name & " into memory", AlertNewLine.AddCRLF)
+            Alert("Loading WBC " & file.Name & " into memory", AlertNewLine.ADD_CRLF)
             loadDBCtoDataTable(txtBaseFolder.Text & "/CACHE/WDB/engb" & "/" & file.Name, dbcDataTable)
 #If _MyType <> "Console" Then
             Application.DoEvents()
@@ -491,7 +489,7 @@ Public Class MaNGOSExtractor
             'End If
 
             ' If chkSQL.Checked = True Then
-            Alert("Creating SQL for " & file.Name, AlertNewLine.AddCRLF)
+            Alert("Creating SQL for " & file.Name, AlertNewLine.ADD_CRLF)
             exportSQL(txtOutputFolder.Text & "\" & file.Name, dbcDataTable, txtBaseFolder.Text)
 #If _MyType <> "Console" Then
             Application.DoEvents()
@@ -499,24 +497,23 @@ Public Class MaNGOSExtractor
             Threading.Thread.Sleep(0)
 #End If
         Next
-        Alert("Finished Exporting", AlertNewLine.AddCRLF)
+        Alert("Finished Exporting", AlertNewLine.ADD_CRLF)
         'End If
-        Me.Cursor = Windows.Forms.Cursors.Default
+        Me.Cursor = Cursors.Default
         brnWDB.Enabled = True
     End Sub
 
     Private Sub BtnSelectBaseFolderClick(sender As Object, e As EventArgs) Handles btnSelectBaseFolder.Click
         FolderBrowserDialog1.SelectedPath = txtBaseFolder.Text
-        If FolderBrowserDialog1.ShowDialog = Windows.Forms.DialogResult.OK Then
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             txtBaseFolder.Text = FolderBrowserDialog1.SelectedPath
         End If
     End Sub
 
     Private Sub BtnSelectOutputFolderClick(sender As Object, e As EventArgs) Handles btnSelectOutputFolder.Click
         FolderBrowserDialog1.SelectedPath = txtOutputFolder.Text
-        If FolderBrowserDialog1.ShowDialog = Windows.Forms.DialogResult.OK Then
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             txtOutputFolder.Text = FolderBrowserDialog1.SelectedPath
         End If
     End Sub
-
 End Class

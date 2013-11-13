@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
 <root>
   <Config>
     <Lang_Count>12</Lang_Count>
@@ -2067,9 +2068,9 @@
       <field type="int" name="particleColorID" include="y" />
     </ItemDisplayInfo>
     <ItemExtendedCost>
-        <index>
-          <primary>Id</primary>
-        </index>
+      <index>
+        <primary>Id</primary>
+      </index>
       <include>Y</include>
       <tablename>dbc_ItemExtendedCost</tablename>
       <fieldcount>16</fieldcount>
@@ -2873,10 +2874,11 @@
       <field type="text" name="Directory" include="y" />
       <field type="int" name="instancetype" include="y" />
       <field type="int" name="flags" include="y" />
-      <field type="text" name="Type" include="y" comment="0 - None, 1 - Party, 2 - Raid, 3 - PVP, 4 - Arena, any other value - none" />
+      <field type="text" name="Type" include="y"
+             comment="0 - None, 1 - Party, 2 - Raid, 3 - PVP, 4 - Arena, any other value - none" />
       <field type="text" name="isPvp" include="y" comment="Boolean value: 1 - True, 0 - False" />
       <field type="text" name="MapName" include="y" />
-      <field type="text" name="linkedZone" include="y" comment="linked to areatable.dbc id"/>
+      <field type="text" name="linkedZone" include="y" comment="linked to areatable.dbc id" />
       <field type="text" name="hordeIntro" include="y" />
       <field type="text" name="allianceIntro" include="y" />
       <field type="text" name="multimap_id" include="y" />

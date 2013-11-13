@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
 <root>
   <Config>
     <Lang_Count>12</Lang_Count>
@@ -1902,9 +1903,9 @@
       <field type="int" name="particleColorID" include="y" />
     </ItemDisplayInfo>
     <ItemExtendedCost>
-        <index>
-          <primary>Id</primary>
-        </index>
+      <index>
+        <primary>Id</primary>
+      </index>
       <include>Y</include>
       <tablename>dbc_ItemExtendedCost</tablename>
       <fieldcount>31</fieldcount>

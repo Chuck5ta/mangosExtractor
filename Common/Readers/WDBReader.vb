@@ -1,11 +1,9 @@
-Imports System.Collections.Generic
 Imports System.IO
-Imports System.Linq
 Imports System.Text
 
 Namespace FileReader
-    Class WDBReader
-        Implements IWowClientDBReader
+    Class WdbReader
+        Implements IWowClientDbReader
         Private Const HeaderSize As Integer = 24
         ' creaturecache.wdb
         ' gameobjectcache.wdb
@@ -16,10 +14,9 @@ Namespace FileReader
         ' pagetextcache.wdb
         ' questcache.wdb
         ' wowcache.wdb
-        Private WDBSigs As UInteger() = New UInteger() {&H574D4F42, &H57474F42, &H57494442, &H574E4442, &H57495458, &H574E5043, _
-            &H57505458, &H57515354, &H5752444E}
+        Private WDBSigs As UInteger() = New UInteger() {&H574D4F42, &H57474F42, &H57494442, &H574E4442, &H57495458, &H574E5043, &H57505458, &H57515354, &H5752444E}
 
-        ReadOnly Property RecordsCount() As Integer Implements IWowClientDBReader.RecordsCount
+        ReadOnly Property RecordsCount() As Integer Implements IWowClientDbReader.RecordsCount
             Get
                 Return m_RecordsCount
             End Get
@@ -27,8 +24,10 @@ Namespace FileReader
             '    m_RecordsCount = Value
             'End Set
         End Property
+
         Private m_RecordsCount As Integer
-        ReadOnly Property FieldsCount() As Integer Implements IWowClientDBReader.FieldsCount
+
+        ReadOnly Property FieldsCount() As Integer Implements IWowClientDbReader.FieldsCount
             Get
                 Return m_FieldsCount
             End Get
@@ -36,8 +35,10 @@ Namespace FileReader
             '    m_FieldsCount = value
             'End Set
         End Property
+
         Private m_FieldsCount As Integer
-        ReadOnly Property RecordSize() As Integer Implements IWowClientDBReader.RecordSize
+
+        ReadOnly Property RecordSize() As Integer Implements IWowClientDbReader.RecordSize
             Get
                 Return m_RecordSize
             End Get
@@ -45,8 +46,10 @@ Namespace FileReader
             '    m_RecordSize = value
             'End Set
         End Property
+
         Private m_RecordSize As Integer
-        ReadOnly Property StringTableSize() As Integer Implements IWowClientDBReader.StringTableSize
+
+        ReadOnly Property StringTableSize() As Integer Implements IWowClientDbReader.StringTableSize
             Get
                 Return m_StringTableSize
             End Get
@@ -54,9 +57,10 @@ Namespace FileReader
             '    m_StringTableSize = Value
             'End Set
         End Property
+
         Private m_StringTableSize As Integer
 
-        ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDBReader.StringTable
+        ReadOnly Property StringTable() As Dictionary(Of Integer, String) Implements IWowClientDbReader.StringTable
             Get
                 Return m_StringTable
             End Get
@@ -64,15 +68,16 @@ Namespace FileReader
             '    m_StringTable = value
             'End Set
         End Property
+
         Private m_StringTable As Dictionary(Of Integer, String)
 
         Private m_rows As Dictionary(Of Integer, Byte())
 
-        Public Function GetRowAsByteArray(row As Integer) As Byte() Implements IWowClientDBReader.GetRowAsByteArray
+        Public Function GetRowAsByteArray(row As Integer) As Byte() Implements IWowClientDbReader.GetRowAsByteArray
             Return m_rows(m_rows.ElementAt(row).Key)
         End Function
 
-        Default Public ReadOnly Property Item(row As Integer) As BinaryReader Implements IWowClientDBReader.Item
+        Default Public ReadOnly Property Item(row As Integer) As BinaryReader Implements IWowClientDbReader.Item
             Get
                 Return New BinaryReader(New MemoryStream(m_rows.ElementAt(row).Value), Encoding.UTF8)
             End Get
@@ -107,7 +112,7 @@ Namespace FileReader
                         If entry = 0 AndAlso size = 0 AndAlso reader.BaseStream.Position = reader.BaseStream.Length Then
                             Exit While
                         End If
-                        Dim row = New Byte(-1) {}.Concat(BitConverter.GetBytes(entry)).Concat(reader.ReadBytes(size)).ToArray()
+                        Dim row = New Byte(- 1) {}.Concat(BitConverter.GetBytes(entry)).Concat(reader.ReadBytes(size)).ToArray()
                         m_rows.Add(entry, row)
                     End While
                 Catch ex As Exception

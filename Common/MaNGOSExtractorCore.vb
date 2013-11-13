@@ -1,46 +1,47 @@
 ﻿Imports System.IO
 Imports System.Text
-Imports System.Data
+Imports System.Globalization
+Imports MpqLib.Mpq
+Imports System.Xml
 Imports System.Reflection
-Imports System.Linq.Expressions
-
 
 Namespace Core
-    Module MaNGOSExtractorCore
-        Private m_BuildNo As Integer
-        Private m_MajorVersion As Integer
-        Private m_FullVersion As String
-        Public ReadOnly MaNGOSExtractorVersion As String = "v1.46"
+    Module MaNgosExtractorCore
+        Private _mBuildNo As Integer
+        Private _mMajorVersion As Integer
+        Private _mFullVersion As String
+        Public Const MaNgosExtractorVersion As String = "v1.47"
 
         Property BuildNo As Integer
             Get
-                Return m_BuildNo
+                Return _mBuildNo
             End Get
-            Set(value As Integer)
-                m_BuildNo = value
+            Private Set(value As Integer)
+                _mBuildNo = value
             End Set
         End Property
 
         Property MajorVersion As Integer
             Get
-                Return m_MajorVersion
+                Return _mMajorVersion
             End Get
-            Set(value As Integer)
-                m_MajorVersion = value
+            Private Set(value As Integer)
+                _mMajorVersion = value
             End Set
         End Property
 
         Property FullVersion As String
             Get
-                Return m_FullVersion
+                Return _mFullVersion
             End Get
-            Set(value As String)
-                m_FullVersion = value
+            Private Set(value As String)
+                _mFullVersion = value
             End Set
         End Property
 
+        
         ''' <summary>
-        ''' Returns the version number as a string which is pulled from the application properties
+        '''     Returns the version number as a string which is pulled from the application properties
         ''' </summary>
         ''' <value></value>
         ''' <returns></returns>
@@ -55,62 +56,81 @@ Namespace Core
             'End Set
         End Property
 
+        
         ''' <summary>
-        ''' A boolean value which indicates whether the app is running as a gui or console (false=console)
+        '''     A boolean value which indicates whether the app is running as a gui or console (false=console)
         ''' </summary>
         ''' <value></value>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Property runAsGui As Boolean
+        Public Property RunAsGui As Boolean
             Get
-                Return m_runningAsGui
+                Return _mRunningAsGui
             End Get
             Set(value As Boolean)
-                m_runningAsGui = value
+                _mRunningAsGui = value
             End Set
         End Property
-        Private m_runningAsGui As Boolean = False
 
+        Private _mRunningAsGui As Boolean = False
+
+        
         ''' <summary>
-        ''' Defines the Listbox which messages are sent to in gui mode
+        '''     Defines the Listbox which messages are sent to in gui mode
         ''' </summary>
         ''' <value></value>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Property alertlist As Listbox
-            Get
-                Return m_alertlist
+        Public Property Alertlist As ListBox
+            Private Get
+                Return _mAlertlist
             End Get
-            Set(value As Listbox)
-                m_alertlist = value
+            Set(value As ListBox)
+                _mAlertlist = value
             End Set
         End Property
-        Private m_alertlist As Listbox
 
-        Public Sub ReadWarcraftExe(ByRef Filename As String)
+        ''' <summary>
+        '''     Defines the Listbox which messages are sent to in gui mode
+        ''' </summary>
+        ''' <value></value>
+        ''' <returns></returns>
+        ''' <remarks></remarks>
+        Public Property AlertTitle As Listbox
+            Private Get
+                Return _mAlertTitle
+            End Get
+            Set(value As Listbox)
+                _mAlertTitle = value
+            End Set
+        End Property
+
+        Private _mAlertlist As ListBox
+        Private _mAlertTitle As Listbox
+
+        Public Sub ReadWarcraftExe(ByRef filename As String)
             Try
-                Dim Version As String = FileVersionInfo.GetVersionInfo(Filename).FileVersion
-                BuildNo = Version.Substring(Version.LastIndexOf(", ") + 2)
-                FullVersion = Version.Substring(0, Version.LastIndexOf(", ")).Replace(" ", "").Replace(",", ".")
-                MajorVersion = Version.Substring(0, 1)
+                _mFullVersion = FileVersionInfo.GetVersionInfo(filename).FileVersion
+                BuildNo = _mFullVersion.Substring(_mFullVersion.LastIndexOf(", ") + 2)
+                FullVersion = _mFullVersion.Substring(0, _mFullVersion.LastIndexOf(", ")).Replace(" ", "").Replace(",", ".")
+                MajorVersion = _mFullVersion.Substring(0, 1)
             Catch ex As Exception
 
             End Try
-
         End Sub
 
-
+        
         ''' <summary>
-        ''' Recursively reads the directory structure from the StartFolder down
+        '''     Recursively reads the directory structure from the StartFolder down
         ''' </summary>
-        ''' <param name="StartFolder"></param>
-        ''' <param name="FolderList"></param>
+        ''' <param name="startFolder"></param>
+        ''' <param name="folderList"></param>
         ''' <remarks></remarks>
-        Public Function ReadFolders(ByRef StartFolder As DirectoryInfo, ByRef FolderList As Collection) As String
+        Public Function ReadFolders(ByRef startFolder As DirectoryInfo, ByRef folderList As Collection) As String
             Dim sbOutput As New StringBuilder
-            If Directory.Exists(StartFolder.FullName) = True Then
+            If Directory.Exists(startFolder.FullName) = True Then
                 Try
-                    For Each thisFolder As DirectoryInfo In StartFolder.GetDirectories()
+                    For Each thisFolder As DirectoryInfo In startFolder.GetDirectories()
                         Try
                             'Skip the cache and updates folders if they exist
                             If thisFolder.FullName.ToLower.Contains("cache") = False And thisFolder.FullName.ToLower.Contains("updates") = False Then
@@ -127,35 +147,36 @@ Namespace Core
                         End Try
                     Next
                 Catch ex As Exception
-                    sbOutput.AppendLine("Error reading folder '" & StartFolder.FullName & "'")
+                    sbOutput.AppendLine("Error reading folder '" & startFolder.FullName & "'")
                 End Try
             Else
-                sbOutput.AppendLine("Warcraft folder '" & StartFolder.FullName & "' can not be located")
+                sbOutput.AppendLine("Warcraft folder '" & startFolder.FullName & "' can not be located")
             End If
             Return sbOutput.ToString()
         End Function
 
+        
         ''' <summary>
-        ''' Extracts DBC Files including Patch files (MPQLib Version)
+        '''     Extracts DBC Files including Patch files (MPQLib Version)
         ''' </summary>
-        ''' <param name="MPQFilename"></param>
-        ''' <param name="FileFilter"></param>
-        ''' <param name="DestinationFolder"></param>
+        ''' <param name="mpqFilename"></param>
+        ''' <param name="fileFilter"></param>
+        ''' <param name="destinationFolder"></param>
         ''' <remarks></remarks>
-        Public Function ExtractDBCFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
-            Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
+        Public Function ExtractDbcFiles(ByVal mpqFilename As String, ByVal fileFilter As String, ByVal destinationFolder As String) As String
+            Dim archive As CArchive
+            Dim fileList As IEnumerable(Of CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
                 'Open the Archive Folder
-                Archive = New MpqLib.Mpq.CArchive(MPQFilename)
+                archive = New CArchive(mpqFilename)
 
                 'Get a list of all files matching FileFilter
-                FileList = Archive.FindFiles(FileFilter)
+                fileList = archive.FindFiles(fileFilter)
 
                 'Process each file found
-                For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
+                For Each thisFile As CFileInfo In fileList
 #If _MyType <> "Console" Then
                     Application.DoEvents()
 #Else
@@ -172,26 +193,26 @@ Namespace Core
                     Dim strSubFolder As String
                     If thisFile.FileName.Contains("\") = True Then
                         strSubFolder = thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))
-                        If My.Computer.FileSystem.DirectoryExists(DestinationFolder & strSubFolder) = False Then
-                            Directory.CreateDirectory(DestinationFolder & strSubFolder)
+                        If My.Computer.FileSystem.DirectoryExists(destinationFolder & strSubFolder) = False Then
+                            Directory.CreateDirectory(destinationFolder & strSubFolder)
                         End If
                     Else
                         strSubFolder = ""
-                        If My.Computer.FileSystem.DirectoryExists(DestinationFolder) = False Then
-                            Directory.CreateDirectory(DestinationFolder)
+                        If My.Computer.FileSystem.DirectoryExists(destinationFolder) = False Then
+                            Directory.CreateDirectory(destinationFolder)
                         End If
                     End If
 
                     Dim strOriginalName As String = thisFile.FileName.Substring(thisFile.FileName.LastIndexOf("\") + 1, thisFile.FileName.Length - (thisFile.FileName.LastIndexOf("\") + 1))
-                    Dim strPatchName As String = strOriginalName & "_" & MPQFilename.Substring(MPQFilename.LastIndexOf("\") + 1, MPQFilename.Length - (MPQFilename.LastIndexOf("\") + 1) - 4) & ".patch"
+                    Dim strPatchName As String = strOriginalName & "_" & mpqFilename.Substring(mpqFilename.LastIndexOf("\") + 1, mpqFilename.Length - (mpqFilename.LastIndexOf("\") + 1) - 4) & ".patch"
                     Dim strNewName As String = strOriginalName & ".New"
-                    If DestinationFolder.EndsWith("\") = False Then DestinationFolder = DestinationFolder & "\"
+                    If destinationFolder.EndsWith("\") = False Then destinationFolder = destinationFolder & "\"
 
                     'Skip corrupt files (Length < 21)
                     If inbyteData.Length > 20 Then
 
                         'We perform this export so that we can get the header bytes
-                        Archive.ExportFile(thisFile.FileName, inbyteData)
+                        archive.ExportFile(thisFile.FileName, inbyteData)
                         If (inbyteData(0) = 87 And inbyteData(1) = 68 And inbyteData(2) = 66 And inbyteData(3) = 67) Then intFileType = 1 'WDBC HEader
                         If (inbyteData(0) = 87 And inbyteData(1) = 68 And inbyteData(2) = 66 And inbyteData(3) = 50) Then intFileType = 2 'WDB2 Header
                         If (inbyteData(0) = 80 And inbyteData(1) = 84 And inbyteData(2) = 67 And inbyteData(3) = 72) Then intFileType = 3 'PTCH File
@@ -200,21 +221,21 @@ Namespace Core
 
                             'Create the output directory tree, allowing for additional paths contained within the filename
                             If thisFile.FileName.Contains("\") = True Then
-                                If My.Computer.FileSystem.DirectoryExists(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
-                                    Directory.CreateDirectory(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
+                                If My.Computer.FileSystem.DirectoryExists(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
+                                    Directory.CreateDirectory(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
                                 End If
                             Else
-                                If My.Computer.FileSystem.DirectoryExists(DestinationFolder) = False Then
-                                    Directory.CreateDirectory(DestinationFolder)
+                                If My.Computer.FileSystem.DirectoryExists(destinationFolder) = False Then
+                                    Directory.CreateDirectory(destinationFolder)
                                 End If
                             End If
 
                             'If the file already exists, delete it and recreate it
-                            If My.Computer.FileSystem.FileExists(DestinationFolder & "\" & thisFile.FileName) = True Then
-                                My.Computer.FileSystem.DeleteFile(DestinationFolder & "\" & thisFile.FileName)
+                            If My.Computer.FileSystem.FileExists(destinationFolder & "\" & thisFile.FileName) = True Then
+                                My.Computer.FileSystem.DeleteFile(destinationFolder & "\" & thisFile.FileName)
                             End If
-                            Archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
-                        ElseIf intFileType = 3 Then   'PTCH File
+                            archive.ExportFile(thisFile.FileName, destinationFolder & "\" & thisFile.FileName)
+                        ElseIf intFileType = 3 Then 'PTCH File
 
                             '###############################################################################
                             '## Patch Files are a special case and are only present in Cata and Mop       ##
@@ -231,14 +252,14 @@ Namespace Core
                             '###############################################################################
 
                             'If the file already exists, delete it and recreate it
-                            If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strPatchName) = True Then
-                                My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strPatchName)
+                            If My.Computer.FileSystem.FileExists(destinationFolder & strSubFolder & "\" & strPatchName) = True Then
+                                My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strPatchName)
                             End If
-                            Archive.ExportFile(thisFile.FileName, DestinationFolder & strSubFolder & "\" & strPatchName)
+                            archive.ExportFile(thisFile.FileName, destinationFolder & strSubFolder & "\" & strPatchName)
 
                             'Copy the patch to .new
-                            If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
-                                File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
+                            If My.Computer.FileSystem.FileExists(destinationFolder & strSubFolder & "\" & strNewName) = False Then
+                                File.Copy(destinationFolder & strSubFolder & "\" & strPatchName, destinationFolder & strSubFolder & "\" & strNewName)
                             End If
 
 
@@ -246,17 +267,17 @@ Namespace Core
                             '## Stage 2 - will attempt to process the patch files and apply them to the   ##
                             '##           original file                                                   ##
                             '###############################################################################
-                            Using p As New Blizzard.Patch(DestinationFolder & strSubFolder & "\" & strPatchName)
+                            Using p As New Blizzard.Patch(destinationFolder & strSubFolder & "\" & strPatchName)
                                 p.PrintHeaders(strOriginalName)
-                                p.Apply(DestinationFolder & strSubFolder & "\" & strOriginalName, DestinationFolder & strSubFolder & "\" & strNewName, True)
+                                p.Apply(destinationFolder & strSubFolder & "\" & strOriginalName, destinationFolder & strSubFolder & "\" & strNewName, True)
                             End Using
 
                             'Move the original and the patch
-                            My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strOriginalName)
-                            My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strPatchName)
+                            My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strOriginalName)
+                            My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strPatchName)
 
                             'Rename the .new as the Original Name
-                            My.Computer.FileSystem.RenameFile(DestinationFolder & strSubFolder & "\" & strNewName, strOriginalName)
+                            My.Computer.FileSystem.RenameFile(destinationFolder & strSubFolder & "\" & strNewName, strOriginalName)
 
 
                             'Else    'File is something else
@@ -279,28 +300,29 @@ Namespace Core
             Return sbOutput.ToString()
         End Function
 
+        
         ''' <summary>
-        ''' Extracts ADT Files including Patch files (MPQLib Version)
+        '''     Extracts ADT Files including Patch files (MPQLib Version)
         ''' </summary>
-        ''' <param name="MPQFilename"></param>
-        ''' <param name="FileFilter"></param>
-        ''' <param name="DestinationFolder"></param>
+        ''' <param name="mpqFilename"></param>
+        ''' <param name="fileFilter"></param>
+        ''' <param name="destinationFolder"></param>
         ''' <remarks></remarks>
-        Public Function ExtractADTFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
-            Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
+        Public Function ExtractAdtFiles(ByVal mpqFilename As String, ByVal fileFilter As String, ByVal destinationFolder As String) As String
+            Dim archive As CArchive
+            Dim fileList As IEnumerable(Of CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
                 'Open the Archive Folder
-                Archive = New MpqLib.Mpq.CArchive(MPQFilename)
+                archive = New CArchive(mpqFilename)
 
                 'Get a list of all files matching FileFilter
-                FileList = Archive.FindFiles(FileFilter)
+                fileList = archive.FindFiles(fileFilter)
 
                 'Process each file found
                 Dim blnProcessFile As Boolean = True
-                For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
+                For Each thisFile As CFileInfo In fileList
                     blnProcessFile = True
                     If thisFile.FileName.EndsWith("_obj0.adt") = True Then blnProcessFile = False
                     If thisFile.FileName.EndsWith("_obj1.adt") = True Then blnProcessFile = False
@@ -324,27 +346,27 @@ Namespace Core
                         Dim strSubFolder As String
                         If thisFile.FileName.Contains("\") = True Then
                             strSubFolder = thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))
-                            If My.Computer.FileSystem.DirectoryExists(DestinationFolder & strSubFolder) = False Then
-                                Directory.CreateDirectory(DestinationFolder & strSubFolder)
+                            If My.Computer.FileSystem.DirectoryExists(destinationFolder & strSubFolder) = False Then
+                                Directory.CreateDirectory(destinationFolder & strSubFolder)
                             End If
                         Else
                             strSubFolder = ""
-                            If My.Computer.FileSystem.DirectoryExists(DestinationFolder) = False Then
-                                Directory.CreateDirectory(DestinationFolder)
+                            If My.Computer.FileSystem.DirectoryExists(destinationFolder) = False Then
+                                Directory.CreateDirectory(destinationFolder)
                             End If
                         End If
 
                         Dim strOriginalName As String = thisFile.FileName.Substring(thisFile.FileName.LastIndexOf("\") + 1, thisFile.FileName.Length - (thisFile.FileName.LastIndexOf("\") + 1))
-                        Dim strPatchName As String = strOriginalName & "_" & MPQFilename.Substring(MPQFilename.LastIndexOf("\") + 1, MPQFilename.Length - (MPQFilename.LastIndexOf("\") + 1) - 4) & ".patch"
+                        Dim strPatchName As String = strOriginalName & "_" & mpqFilename.Substring(mpqFilename.LastIndexOf("\") + 1, mpqFilename.Length - (mpqFilename.LastIndexOf("\") + 1) - 4) & ".patch"
                         Dim strNewName As String = strOriginalName & ".New"
-                        If DestinationFolder.EndsWith("\") = False Then DestinationFolder = DestinationFolder & "\"
+                        If destinationFolder.EndsWith("\") = False Then destinationFolder = destinationFolder & "\"
 
                         'Skip corrupt files (Length < 21)
                         If inbyteData.Length > 20 Then
 
                             'We perform this export so that we can get the header bytes
-                            Alert("Processing: " & thisFile.FileName, AlertNewLine.AddCRLF)
-                            Archive.ExportFile(thisFile.FileName, inbyteData)
+                            Alert("Processing: " & thisFile.FileName, AlertNewLine.ADD_CRLF)
+                            archive.ExportFile(thisFile.FileName, inbyteData)
                             If (inbyteData(0) = 82 And inbyteData(1) = 69 And inbyteData(2) = 86 And inbyteData(3) = 77) Then intFileType = 1 'REVM HEader
                             If (inbyteData(0) = 80 And inbyteData(1) = 84 And inbyteData(2) = 67 And inbyteData(3) = 72) Then intFileType = 3 'PTCH File
 
@@ -352,21 +374,21 @@ Namespace Core
 
                                 'Create the output directory tree, allowing for additional paths contained within the filename
                                 If thisFile.FileName.Contains("\") = True Then
-                                    If My.Computer.FileSystem.DirectoryExists(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
-                                        Directory.CreateDirectory(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
+                                    If My.Computer.FileSystem.DirectoryExists(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
+                                        Directory.CreateDirectory(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
                                     End If
                                 Else
-                                    If My.Computer.FileSystem.DirectoryExists(DestinationFolder) = False Then
-                                        Directory.CreateDirectory(DestinationFolder)
+                                    If My.Computer.FileSystem.DirectoryExists(destinationFolder) = False Then
+                                        Directory.CreateDirectory(destinationFolder)
                                     End If
                                 End If
 
                                 'If the file already exists, delete it and recreate it
-                                If My.Computer.FileSystem.FileExists(DestinationFolder & "\" & thisFile.FileName) = True Then
-                                    My.Computer.FileSystem.DeleteFile(DestinationFolder & "\" & thisFile.FileName)
+                                If My.Computer.FileSystem.FileExists(destinationFolder & "\" & thisFile.FileName) = True Then
+                                    My.Computer.FileSystem.DeleteFile(destinationFolder & "\" & thisFile.FileName)
                                 End If
-                                Archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
-                            ElseIf intFileType = 3 Then   'PTCH File
+                                archive.ExportFile(thisFile.FileName, destinationFolder & "\" & thisFile.FileName)
+                            ElseIf intFileType = 3 Then 'PTCH File
 
                                 '###############################################################################
                                 '## Patch Files are a special case and are only present in Cata and Mop       ##
@@ -383,14 +405,14 @@ Namespace Core
                                 '###############################################################################
 
                                 'If the file already exists, delete it and recreate it
-                                If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strPatchName) = True Then
-                                    My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strPatchName)
+                                If My.Computer.FileSystem.FileExists(destinationFolder & strSubFolder & "\" & strPatchName) = True Then
+                                    My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strPatchName)
                                 End If
-                                Archive.ExportFile(thisFile.FileName, DestinationFolder & strSubFolder & "\" & strPatchName)
+                                archive.ExportFile(thisFile.FileName, destinationFolder & strSubFolder & "\" & strPatchName)
 
                                 'Copy the patch to .new
-                                If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
-                                    File.Copy(DestinationFolder & strSubFolder & "\" & strPatchName, DestinationFolder & strSubFolder & "\" & strNewName)
+                                If My.Computer.FileSystem.FileExists(destinationFolder & strSubFolder & "\" & strNewName) = False Then
+                                    File.Copy(destinationFolder & strSubFolder & "\" & strPatchName, destinationFolder & strSubFolder & "\" & strNewName)
                                 End If
 
 
@@ -398,17 +420,17 @@ Namespace Core
                                 '## Stage 2 - will attempt to process the patch files and apply them to the   ##
                                 '##           original file                                                   ##
                                 '###############################################################################
-                                Using p As New Blizzard.Patch(DestinationFolder & strSubFolder & "\" & strPatchName)
+                                Using p As New Blizzard.Patch(destinationFolder & strSubFolder & "\" & strPatchName)
                                     p.PrintHeaders(strOriginalName)
-                                    p.Apply(DestinationFolder & strSubFolder & "\" & strOriginalName, DestinationFolder & strSubFolder & "\" & strNewName, True)
+                                    p.Apply(destinationFolder & strSubFolder & "\" & strOriginalName, destinationFolder & strSubFolder & "\" & strNewName, True)
                                 End Using
 
                                 'Move the original and the patch
-                                My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strOriginalName)
-                                My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strPatchName)
+                                My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strOriginalName)
+                                My.Computer.FileSystem.DeleteFile(destinationFolder & strSubFolder & "\" & strPatchName)
 
                                 'Rename the .new as the Original Name
-                                My.Computer.FileSystem.RenameFile(DestinationFolder & strSubFolder & "\" & strNewName, strOriginalName)
+                                My.Computer.FileSystem.RenameFile(destinationFolder & strSubFolder & "\" & strNewName, strOriginalName)
 
                             End If
                         End If
@@ -425,33 +447,30 @@ Namespace Core
             Return sbOutput.ToString()
         End Function
 
+        
         ''' <summary>
-        ''' Extracts WDT Files including Patch files (MPQLib Version)
+        '''     Extracts WDT Files including Patch files (MPQLib Version)
         ''' </summary>
-        ''' <param name="MPQFilename"></param>
-        ''' <param name="FileFilter"></param>
-        ''' <param name="DestinationFolder"></param>
+        ''' <param name="mpqFilename"></param>
+        ''' <param name="fileFilter"></param>
+        ''' <param name="destinationFolder"></param>
         ''' <remarks></remarks>
-        Public Function ExtractWDTFiles(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
-            Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
+        Public Function ExtractWdtFiles(ByVal mpqFilename As String, ByVal fileFilter As String, ByVal destinationFolder As String) As String
+            Dim archive As CArchive
+            Dim fileList As IEnumerable(Of CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
                 'Open the Archive Folder
-                Archive = New MpqLib.Mpq.CArchive(MPQFilename)
+                archive = New CArchive(mpqFilename)
 
                 'Get a list of all files matching FileFilter
-                FileList = Archive.FindFiles(FileFilter)
+                fileList = archive.FindFiles(fileFilter)
 
                 'Process each file found
                 Dim blnProcessFile As Boolean = True
-                For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
+                For Each thisFile As CFileInfo In fileList
                     blnProcessFile = True
-                    'If thisFile.FileName.EndsWith("_obj0.adt") = True Then blnProcessFile = False
-                    'If thisFile.FileName.EndsWith("_obj1.adt") = True Then blnProcessFile = False
-                    'If thisFile.FileName.EndsWith("_tex0.adt") = True Then blnProcessFile = False
-                    'If thisFile.FileName.EndsWith("_tex1.adt") = True Then blnProcessFile = False
 
                     If blnProcessFile = True Then
 #If _MyType <> "Console" Then
@@ -461,12 +480,8 @@ Namespace Core
 #End If
                         Dim inbyteData(thisFile.Size - 1) As Byte
                         Dim intFileType As Integer = 0
-                        'intFileType = 0  = Unknown
-                        'intFileType = 1  = WDBC
-                        'intFileType = 2  = WDB2
-                        'intFileType = 3  = PTCH
-                        'Create the output directory tree, allowing for additional paths contained within the filename
 
+                        'Create the output directory tree, allowing for additional paths contained within the filename
                         Dim strSubFolder As String
                         If thisFile.FileName.Contains("\") = True Then
                             strSubFolder = thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))
@@ -481,7 +496,7 @@ Namespace Core
                         End If
 
                         Dim strOriginalName As String = thisFile.FileName.Substring(thisFile.FileName.LastIndexOf("\") + 1, thisFile.FileName.Length - (thisFile.FileName.LastIndexOf("\") + 1))
-                        Dim strPatchName As String = strOriginalName & "_" & MPQFilename.Substring(MPQFilename.LastIndexOf("\") + 1, MPQFilename.Length - (MPQFilename.LastIndexOf("\") + 1) - 4) & ".patch"
+                        Dim strPatchName As String = strOriginalName & "_" & mpqFilename.Substring(mpqFilename.LastIndexOf("\") + 1, mpqFilename.Length - (mpqFilename.LastIndexOf("\") + 1) - 4) & ".patch"
                         Dim strNewName As String = strOriginalName & ".New"
                         If DestinationFolder.EndsWith("\") = False Then DestinationFolder = DestinationFolder & "\"
 
@@ -489,8 +504,8 @@ Namespace Core
                         If inbyteData.Length > 20 Then
 
                             'We perform this export so that we can get the header bytes
-                            Alert("Processing: " & thisFile.FileName, AlertNewLine.AddCRLF)
-                            Archive.ExportFile(thisFile.FileName, inbyteData)
+                            Alert("Processing: " & thisFile.FileName, AlertNewLine.ADD_CRLF)
+                            archive.ExportFile(thisFile.FileName, inbyteData)
                             If (inbyteData(0) = 82 And inbyteData(1) = 69 And inbyteData(2) = 86 And inbyteData(3) = 77) Then intFileType = 1 'REVM HEader
                             If (inbyteData(0) = 80 And inbyteData(1) = 84 And inbyteData(2) = 67 And inbyteData(3) = 72) Then intFileType = 3 'PTCH File
 
@@ -511,8 +526,8 @@ Namespace Core
                                 If My.Computer.FileSystem.FileExists(DestinationFolder & "\" & thisFile.FileName) = True Then
                                     My.Computer.FileSystem.DeleteFile(DestinationFolder & "\" & thisFile.FileName)
                                 End If
-                                Archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
-                            ElseIf intFileType = 3 Then   'PTCH File
+                                archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
+                            ElseIf intFileType = 3 Then 'PTCH File
 
                                 '###############################################################################
                                 '## Patch Files are a special case and are only present in Cata and Mop       ##
@@ -532,7 +547,7 @@ Namespace Core
                                 If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strPatchName) = True Then
                                     My.Computer.FileSystem.DeleteFile(DestinationFolder & strSubFolder & "\" & strPatchName)
                                 End If
-                                Archive.ExportFile(thisFile.FileName, DestinationFolder & strSubFolder & "\" & strPatchName)
+                                archive.ExportFile(thisFile.FileName, DestinationFolder & strSubFolder & "\" & strPatchName)
 
                                 'Copy the patch to .new
                                 If My.Computer.FileSystem.FileExists(DestinationFolder & strSubFolder & "\" & strNewName) = False Then
@@ -544,9 +559,9 @@ Namespace Core
                                 '## Stage 2 - will attempt to process the patch files and apply them to the   ##
                                 '##           original file                                                   ##
                                 '###############################################################################
-                                Using p As New Blizzard.Patch(DestinationFolder & strSubFolder & "\" & strPatchName)
+                                Using p As New Blizzard.Patch(destinationFolder & strSubFolder & "\" & strPatchName)
                                     p.PrintHeaders(strOriginalName)
-                                    p.Apply(DestinationFolder & strSubFolder & "\" & strOriginalName, DestinationFolder & strSubFolder & "\" & strNewName, True)
+                                    p.Apply(destinationFolder & strSubFolder & "\" & strOriginalName, destinationFolder & strSubFolder & "\" & strNewName, True)
                                 End Using
 
                                 'Move the original and the patch
@@ -571,46 +586,47 @@ Namespace Core
             Return sbOutput.ToString()
         End Function
 
+        
         ''' <summary>
-        ''' Generic Extraction Routine
+        '''     Generic Extraction Routine
         ''' </summary>
         ''' <param name="MPQFilename"></param>
         ''' <param name="FileFilter"></param>
         ''' <param name="DestinationFolder"></param>
         ''' <remarks></remarks>
-        Public Function ExtractFilesGeneric(ByVal MPQFilename As String, ByVal FileFilter As String, ByVal DestinationFolder As String) As String
-            Dim Archive As MpqLib.Mpq.CArchive
-            Dim FileList As IEnumerable(Of MpqLib.Mpq.CFileInfo)
+        Public Function ExtractFilesGeneric(ByVal mpqFilename As String, ByVal fileFilter As String, ByVal destinationFolder As String) As String
+            Dim archive As CArchive
+            Dim fileList As IEnumerable(Of CFileInfo)
             Dim sbOutput As New StringBuilder
 
             Try
-                Archive = New MpqLib.Mpq.CArchive(MPQFilename)
+                archive = New CArchive(mpqFilename)
 
-                FileList = Archive.FindFiles(FileFilter)
+                fileList = archive.FindFiles(fileFilter)
 
-                For Each thisFile As MpqLib.Mpq.CFileInfo In FileList
+                For Each thisFile As CFileInfo In fileList
 #If _MyType <> "Console" Then
                     Application.DoEvents()
 #Else
                     Threading.Thread.Sleep(0)
 #End If
                     If thisFile.FileName.Contains("\") = True Then
-                        If My.Computer.FileSystem.DirectoryExists(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
-                            Directory.CreateDirectory(DestinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
+                        If My.Computer.FileSystem.DirectoryExists(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\")))) = False Then
+                            Directory.CreateDirectory(destinationFolder & "\" & thisFile.FileName.Substring(0, (thisFile.FileName.LastIndexOf("\"))))
                         End If
                     Else
-                        If My.Computer.FileSystem.DirectoryExists(DestinationFolder) = False Then
-                            Directory.CreateDirectory(DestinationFolder)
+                        If My.Computer.FileSystem.DirectoryExists(destinationFolder) = False Then
+                            Directory.CreateDirectory(destinationFolder)
                         End If
                     End If
 
-                    If My.Computer.FileSystem.FileExists(DestinationFolder & "\" & thisFile.FileName) = True Then
-                        My.Computer.FileSystem.DeleteFile(DestinationFolder & "\" & thisFile.FileName)
+                    If My.Computer.FileSystem.FileExists(destinationFolder & "\" & thisFile.FileName) = True Then
+                        My.Computer.FileSystem.DeleteFile(destinationFolder & "\" & thisFile.FileName)
                     End If
 
-                    Alert(thisFile.FileName, AlertNewLine.AddCRLF)
+                    Alert(thisFile.FileName, AlertNewLine.ADD_CRLF)
 
-                    Archive.ExportFile(thisFile.FileName, DestinationFolder & "\" & thisFile.FileName)
+                    archive.ExportFile(thisFile.FileName, destinationFolder & "\" & thisFile.FileName)
 #If _MyType <> "Console" Then
                     Application.DoEvents()
 #Else
@@ -624,75 +640,34 @@ Namespace Core
         End Function
 
         ''' <summary>
-        ''' Returns a value based on object type
+        '''     Loads a DBC file data into a datatable
         ''' </summary>
-        ''' <param name="InputData"></param>
-        ''' <param name="test"></param>
+        ''' <param name="filename"></param>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Function getObjectType(ByRef InputData As Object, ByRef test As String) As String
-            Dim OutData As String = ""
-            Dim testL As Long
-            Long.TryParse(InputData, testL)
-            Dim testI As Integer
-            Integer.TryParse(InputData, testI)
-            Dim testD As Double
-            Double.TryParse(InputData, testD)
-
-            If IsNumeric(InputData) = True Then
-                If testI > 0 And testI < 65536 Then
-                    If test = "Float" Or test = "Long" Or test = "String" Then
-                        OutData = test
-                    Else
-                        OutData = "Int32"
-                    End If
-                ElseIf testI = 0 And testL = 0 Then
-                    If test = "Long" Or test = "String" Then
-                        OutData = test
-                    Else
-                        OutData = "Float"
-                    End If
-                Else
-                    If test = "String" Then
-                        OutData = test
-                    Else
-                        OutData = "Long"
-                    End If
-                End If
-            Else
-                OutData = "String"
-            End If
-            Return OutData
+        Public Function LoadDbCtoDataTable(ByRef filename As String) As Data.DataTable
+            Dim dbcDataTable As New Data.DataTable
+            Return LoadDbCtoDataTable(filename, dbcDataTable)
         End Function
 
+        
         ''' <summary>
-        ''' Loads a DBC file data into a datatable 
+        '''     Loads a DBC file data into a datatable
         ''' </summary>
-        ''' <param name="Filename"></param>
+        ''' <param name="filename"></param>
         ''' <param name="dbcDataTable"></param>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Function loadDBCtoDataTable(ByRef Filename As String) As DataTable
-            Dim dbcDataTable As New DataTable
-            Return loadDBCtoDataTable(Filename, dbcDataTable)
-        End Function
-
-        ''' <summary>
-        ''' Loads a DBC file data into a datatable 
-        ''' </summary>
-        ''' <param name="Filename"></param>
-        ''' <param name="dbcDataTable"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Function loadDBCtoDataTable(ByRef Filename As String, ByRef dbcDataTable As DataTable) As DataTable
-            Dim m_reader As FileReader.IWowClientDBReader
+        Public Function LoadDbCtoDataTable(ByRef filename As String, ByRef dbcDataTable As Data.DataTable) As Data.DataTable
+            Dim mReader As FileReader.IWowClientDbReader
+            'Dim myOutputTable As New DataTable()
 
             Dim entireRow() As Byte
-            Dim thisRow As DataRow
+            'Dim thisRow As DataRow
 
-            m_reader = FileReader.DBReaderFactory.GetReader(Filename)
+            mReader = FileReader.DBReaderFactory.GetReader(filename)
             Try
-                entireRow = m_reader.GetRowAsByteArray(0)
+                entireRow = mReader.GetRowAsByteArray(0)
             Catch ex As Exception
                 entireRow = Nothing
             End Try
@@ -702,276 +677,290 @@ Namespace Core
             Else
                 intMaxcols = entireRow.Length - 1
             End If
-            Dim colType(intMaxcols / 4) As String
-            'Dim ColType(intMaxcols) As String
+            '           Dim colType(intMaxcols / 4) As String
 
+            '###################################################################
+            '### If we have columns, start looping through them
+            '###################################################################
             If intMaxcols > 0 Then
-                For cols As Integer = 0 To intMaxcols Step 4
-                    dbcDataTable.Columns.Add("Unknown" & (cols / 4).ToString(), GetType(String))
-#If _MyType <> "Console" Then
-                    Application.DoEvents()
-#Else
-                    Threading.Thread.Sleep(0)
-#End If
-                Next
-
                 Dim intMaxRows As Integer = 0
                 Try
-                    intMaxRows = m_reader.RecordsCount() - 1
+                    intMaxRows = mReader.RecordsCount() - 1
                 Catch
                     intMaxRows = 0
                 End Try
 
-                'Try
+                '###################################################################
+                '### If we have rows, start looping through them
+                '###################################################################
                 If intMaxRows >= 0 Then
-                    Dim strValuecounter As String = "0%---------50%--------100%"
-                    Dim intblockcountersize As Integer = strValuecounter.Length()
-                    If intMaxRows > 0 Then
-                        Alert("", AlertNewLine.AddCRLF)
-                        Alert("         Loading DBC into memory " & strValuecounter & " Records: " & intMaxRows, AlertNewLine.AddCRLF)
-                        Alert("", AlertNewLine.AddCRLF)
-                        Alert("                                 ", AlertNewLine.NoCRLF)
+                    'Create the entire blank table
+                    Dim tempCols As Integer = (intMaxcols / 4) - 1
+                    For cols As Integer = 0 To tempCols 'intMaxcols Step 4
+                        dbcDataTable.Columns.Add("U_c" & (cols / 4).ToString(), GetType(String))
+                    Next
+                    For intRows As Integer = 0 To intMaxRows + 1
+                        Try
+                            dbcDataTable.Rows.Add()
+                        Catch
+                            Stop
+                        End Try
+                    Next
+
+                    Dim consoleLine As String = filename.Substring(filename.LastIndexOf("\") + 1) & " Rows: " & intMaxRows & " Cols: " & tempCols + 1
+                    consoleLine = consoleLine.PadRight(57)
+                    '                    Alert(consoleLine, AlertNewLine.ADD_CRLF)
+                    Alert(consoleLine, AlertNewLine.NO_CRLF)
+
+                    'Populate Raw Data into the table
+                    Dim colTypes(tempCols) As String
+                    Dim Divisor As Integer
+
+                    If intMaxRows > 25 Then
+                        Divisor = intMaxRows / 25
                     Else
-                        Alert("         Loading DBC into memory " & strValuecounter & " Records: 0", AlertNewLine.AddCRLF)
-                        Alert("", AlertNewLine.AddCRLF)
+                        Divisor = 1
                     End If
 
-                    For rows As Integer = 0 To intMaxRows
-#If _MyType <> "Console" Then
-                        Application.DoEvents()
-#Else
-                        Threading.Thread.Sleep(0)
-#End If
-                        If CInt(intMaxRows / intblockcountersize) > 4 Then
-                            If rows Mod CInt(intMaxRows / intblockcountersize) = 0 Then
-                                Alert(".", AlertNewLine.NoCRLF)
-                            End If
-                        End If
-
-                        entireRow = m_reader.GetRowAsByteArray(rows)
-
-                        thisRow = dbcDataTable.NewRow()
-                        Dim cols As Integer = 0
-                        Dim TempCol As Object '= entireRow(cols)
-                        If entireRow.Length() - 1 < 3 Then
-                            TempCol = entireRow(cols + 1) + entireRow(cols + 0)
-                            thisRow(0) = TempCol
-                        Else
-                            '''''''''''''''''''''''''
-                            While cols < entireRow.Length() - 1 '(dbcDataTable.Columns.Count()) * 4 '((intMaxcols + 1) * 4)
-                                '                       For cols As Integer = 0 To ((intMaxcols - 1) * 4) Step 4
-                                TempCol = New Object '= entireRow(cols)
-                                ' Try
-                                If IsNothing(entireRow) = True Then
-                                    TempCol = -1
-                                Else
-                                    '                                Try
-                                    If entireRow(cols + 3) = 255 And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
-                                        TempCol = "NaN"
-                                    ElseIf entireRow(cols + 3) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
-                                        'Float Value Here
-                                        TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
-                                        'ElseIf entireRow(cols + 3) > 0 And entireRow(cols + 2) > 0 Then ' > 127 Then 'And entireRow(cols + 2) = 255 And entireRow(cols + 1) = 255 And entireRow(cols + 0) = 255 Then
-                                        '    'Float Value Here
-                                        '    TempCol = ConvertHexToSingle(myHex(entireRow(cols + 3)) & myHex(entireRow(cols + 2)) & myHex(entireRow(cols + 1)) & myHex(entireRow(cols + 0)))
-                                        If TempCol.ToString().Contains("+") Then
-                                            If entireRow(cols + 3) > 127 Then
-                                                'Stop
-                                            Else
-                                                TempCol = (entireRow(cols + 3) * 16777216) + (entireRow(cols + 2) * 65536) + (entireRow(cols + 1) * 256) + (entireRow(cols + 0))
-                                            End If
-                                        End If
-                                    Else
-                                        TempCol = (entireRow(cols + 3) * 16777216) + (entireRow(cols + 2) * 65536) + (entireRow(cols + 1) * 256) + (entireRow(cols + 0))
-                                    End If
-                                    'Catch ex As Exception
-                                    '    TempCol = -1
-                                    'End Try
-                                End If
-                                '                            thisRow(CInt(cols / 4)) = TempCol
-                                thisRow(CInt(cols / 4)) = TempCol
-                                '                        Next
-                                cols = cols + 4
+                    Dim dotcount As Integer = 0
+                    For intRows As Integer = 0 To intMaxRows
+                        If intRows Mod Divisor = 0 Then
+                            If intRows > 0 And dotcount < 24 Then
+                                Alert("x", AlertNewLine.NO_CRLF)
+                                dotcount = dotcount + 1
 #If _MyType <> "Console" Then
                                 Application.DoEvents()
 #Else
-                            Threading.Thread.Sleep(0)
+                                Threading.Thread.Sleep(0)
 #End If
-                            End While
+                            End If
                         End If
-                dbcDataTable.Rows.Add(thisRow)
-                ''''''''''''''''''''''''
+
+
+                        entireRow = mReader.GetRowAsByteArray(intRows)
+                        For intcols = 0 To tempCols 'intMaxcols Step 4
+                            Dim rowCols As Integer
+                            rowCols = 4 * intcols
+                            Try
+                                'Load the HEX Bytes into the Cell as a string
+                                dbcDataTable.Rows(intRows)(intcols) = CStr(MyHex(entireRow(rowCols + 3)) & MyHex(entireRow(rowCols + 2)) & MyHex(entireRow(rowCols + 1)) & MyHex(entireRow(rowCols + 0)))
+
+                                'Not use ReturnValueType to determine the datatype
+                                Dim retType As String = ReturnValueType(dbcDataTable.Rows(intRows)(intcols))
+                                If colTypes(intcols) <> "" Then
+                                    'If the returnedtype is different to the current type
+                                    If colTypes(intcols) <> retType Then
+                                        Select Case colTypes(intcols)
+                                            Case "Int32" 'Everything can replace Ints
+                                                colTypes(intcols) = retType
+                                            Case "Long" 'Only Floats can replace Longs
+                                                If retType = "Float" Then colTypes(intcols) = retType
+                                            Case "Float"
+                                                'Nothing replaces Floats
+                                            Case "String" 'Floats and long replace the string flaf
+                                                If retType = "Float" Then colTypes(intcols) = retType
+                                                If retType = "Long" Then colTypes(intcols) = retType
+                                        End Select
+                                    End If
+                                Else
+                                    colTypes(intcols) = retType
+                                End If
+
+                                Try
+                                    dbcDataTable.Rows(intRows)(intcols) = ReturnValue(dbcDataTable.Rows(intRows)(intcols))
+                                Catch ex As Exception
+                                    Stop
+                                End Try
+
+                                'Attempt to clean up the values
+                                If IsDBNull(dbcDataTable.Rows(intRows)(intcols)) = True Then
+                                    If colTypes(intcols) = "Int32" Then
+                                        dbcDataTable.Rows(intRows)(intcols) = 0
+                                    End If
+                                    If colTypes(intcols) = "Long" Then
+                                        dbcDataTable.Rows(intRows)(intcols) = 0
+                                    End If
+                                    If colTypes(intcols) = "Float" Then
+                                        dbcDataTable.Rows(intRows)(intcols) = 0
+                                    End If
+                                End If
+                            Catch ex As Exception
+                                Stop
+                            End Try
+
+                        Next
 
                     Next
-            Else 'Empty file
-                Alert("", AlertNewLine.AddCRLF)
-            End If
+                    If dotcount < 24 Then
+                        Dim tempstr As String
+                        tempstr = New String("x", 24 - dotcount)
+                        Alert(tempstr, AlertNewLine.NO_CRLF)
 
-            Alert("", AlertNewLine.AddCRLF)
-            'Create a new row at the end to store the datatype
-            If intMaxRows > 0 Then
-                thisRow = dbcDataTable.NewRow()
-
-                dbcDataTable.Rows.Add(thisRow)
-                'Try
-                Dim strValuecounter As String = "0%---------50%--------100%"
-                Dim intblockcountersize As Integer = strValuecounter.Length()
-                'If CInt(Fix(TotalRows / 4) / intblockcountersize) > 0 Then
-                Alert("   Determining Column Data Types " & strValuecounter & " Cols: " & dbcDataTable.Columns.Count() - 1, AlertNewLine.AddCRLF)
-                Alert("", AlertNewLine.AddCRLF)
-                Alert("                                 ", AlertNewLine.NoCRLF)
-                'End If
-                Dim totalCols As Integer = dbcDataTable.Columns.Count() - 1
-                For cols As Integer = 0 To totalCols 'TotalRows Step 4
-#If _MyType <> "Console" Then
-                    Application.DoEvents()
-#Else
-                        Threading.Thread.Sleep(0)
-#End If
-                    If CInt((totalCols / intblockcountersize)) > 0 Then
-                        If cols Mod CInt((totalCols / intblockcountersize)) = 0 Then
-
-                            Alert(".", AlertNewLine.NoCRLF)
-
-                        End If
-                    Else
-                        If (cols + 1) Mod CInt((intblockcountersize / (cols + 1))) = 0 Then
-
-                            Alert(".", AlertNewLine.NoCRLF)
-
-                        End If
                     End If
-                    '                Catch ex As Exception
-                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
 
-                    'End Try
+                    'Alert("", AlertNewLine.ADD_CRLF)
 
-                    Dim blnFoundString As Boolean = True
-                    Dim SteppingAmount As Integer = 1 'dbcDataTable.Rows.Count() - 1 / 100
-                    If dbcDataTable.Rows.Count() > 5000 Then SteppingAmount = 100
-                    If SteppingAmount < 1 Then SteppingAmount = 1
-                    For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                        If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                            If dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
-                                '                                    Try
-                                If m_reader.StringTable.ContainsKey(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False Then
-                                    blnFoundString = False
+                    ' ''#############################################################################################
+                    ' ''### Try and find all the string columns
+                    ' ''#############################################################################################
 
-                                    Dim strDataType As String = ""
-                                    Dim strCurDataType As String = "Int32"
-                                    If Not IsDBNull(dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))) Then
-                                        strCurDataType = dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols))
-                                    Else
-                                        strCurDataType = "1"
-                                    End If
-                                    Select Case strCurDataType
-                                        Case "0"
-                                            strDataType = "String"
-                                        Case "1"
-                                            strDataType = "Int32"
-                                        Case "2"
-                                            strDataType = "Long"
-                                        Case "3"
-                                            strDataType = "Float"
-                                    End Select
-                                    strDataType = getObjectType(dbcDataTable.Rows(thisScanRow)(CInt(cols)), strDataType)
-                                    'Try
-                                    If strDataType = "Int32" Then 'Integer
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
-                                    ElseIf strDataType = "Float" Then 'Float
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 3
-                                    ElseIf strDataType = "String" Then 'Float
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
-                                    Else 'Long
-                                        dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 2
-                                    End If
-                                    'Catch ex As Exception
-                                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                                    'End Try
-                                End If
-                                'Catch ex As Exception
-                                'End Try
-                                Else
-                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
-                                End If
-                        End If
+                    For intCols As Integer = 0 To dbcDataTable.Columns.Count() - 1
 #If _MyType <> "Console" Then
                         Application.DoEvents()
 #Else
-                            Threading.Thread.Sleep(0)
+                        Threading.Thread.Sleep(0)
 #End If
-                    Next
-                    'Catch ex As Exception
-                    '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                    'End Try
-
-                    If blnFoundString = True And m_reader.StringTableSize > 0 Then
-                        Dim thisStrLength As Integer = 0
-                        For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                            'If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = False AndAlso dbcDataTable.Rows(thisScanRow)(CInt(cols)) <> "NaN" Then
-                            '    Try
-                            'If Not IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) Then
-                            If IsDBNull(dbcDataTable.Rows(thisScanRow)(CInt(cols))) = True Then
-                                dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
-                                '                                    Stop
-                            Else
-                                If dbcDataTable.Rows(thisScanRow)(CInt(cols)) = "NaN" Then
-                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = ""
-                                Else
-                                    dbcDataTable.Rows(thisScanRow)(CInt(cols)) = m_reader.StringTable(dbcDataTable.Rows(thisScanRow)(CInt(cols)))
-                                    If thisStrLength < dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length Then
-                                        thisStrLength = dbcDataTable.Rows(thisScanRow)(CInt(cols)).ToString().Length
+                        Dim isString As Boolean = True
+                        Try
+                            For introws As Integer = 0 To dbcDataTable.Rows.Count() - 1 'intMaxcols Step 4
+                                Try
+                                    If colTypes(intCols) = "Int32" Then
+                                        If IsDBNull(dbcDataTable.Rows(introws)(intCols)) = False Then
+                                            If CStr(dbcDataTable.Rows(introws)(intCols)).Contains(".") = False Then
+                                                Dim tempInt As Integer
+                                                If Integer.TryParse(dbcDataTable.Rows(introws)(intCols), tempInt) = False Then
+                                                    isString = False
+                                                Else
+                                                    tempInt = dbcDataTable.Rows(introws)(intCols)
+                                                    If tempInt > 1 Then
+                                                        If mReader.StringTable.ContainsKey((dbcDataTable.Rows(introws)(intCols))) = False Then
+                                                            isString = False
+                                                            Exit For
+                                                        End If
+                                                    ElseIf tempInt < 0 Then
+                                                        isString = False
+                                                        Exit For
+                                                    End If
+                                                End If
+                                            Else
+                                                isString = False
+                                                Exit For
+                                            End If
+                                        Else 'Its false, populate with 0
+                                            dbcDataTable.Rows(introws)(intCols) = 0
+                                        End If
+                                    Else
+                                        isString = False
+                                        Exit For
                                     End If
-                                    dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 0
+                                Catch ex As Exception
+                                    Stop
+                                    '                isString = False
+                                End Try
+                                If IsDBNull(dbcDataTable.Rows(introws)(intCols)) = False Then
+                                    If CStr(dbcDataTable.Rows(introws)(intCols)) = "NaN" Then
+                                        isString = False
+                                    Else
+                                        Dim tempInt As Integer
+                                        If Integer.TryParse(dbcDataTable.Rows(introws)(intCols), tempInt) = False Then
+                                            isString = False
+                                        End If
+                                    End If
                                 End If
-                            End If
+                            Next
+                        Catch ex As Exception
+                            Stop
+                        End Try
+                        If isString = True Then
+                            colTypes(intCols) = "String"
+                        End If
+                    Next
+
+                    'Populate the String
+                    For introws As Integer = 0 To dbcDataTable.Rows.Count() - 1 'intMaxcols Step 4
+                        If introws Mod 100 = 0 Then
 #If _MyType <> "Console" Then
                             Application.DoEvents()
 #Else
-                                        Threading.Thread.Sleep(0)
+                            Threading.Thread.Sleep(0)
 #End If
-                            'Catch ex As Exception
-                            'End Try
-                            'End If
-                        Next
-
-                        If thisStrLength = 0 Then
-                            For thisScanRow As Integer = 0 To dbcDataTable.Rows.Count - 1 Step SteppingAmount
-                                dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(cols)) = 1
-                                dbcDataTable.Rows(thisScanRow)(CInt(cols)) = 0
-#If _MyType <> "Console" Then
-                                Application.DoEvents()
-#Else
-                                    Threading.Thread.Sleep(0)
-#End If
-                            Next
                         End If
-                    End If
-#If _MyType <> "Console" Then
-                    Application.DoEvents()
-#Else
-                        Threading.Thread.Sleep(0)
-#End If
-                Next
+                        Try
+                            For intCols As Integer = 0 To dbcDataTable.Columns.Count() - 1
+                                'Need to place the string overrides here !
+                                'Some tables have columns which are not string fields but have data which matches the string table
+                                If MajorVersion = 1 Then 'Classic
+                                    If filename.Contains("BankBagSlotPrices.dbc") = True Then
+                                        If intCols = 1 Then colTypes(intCols) = "Int32"
+                                    ElseIf filename.Contains("CreatureDisplayInfoExtra.dbc") = True Then
+                                        If intCols = 2 Then colTypes(intCols) = "Int32"
+                                    End If
+                                End If
 
-                'Catch ex As Exception
-                '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-                'End Try
+                                Try
+                                    If colTypes(intCols) = "String" Then
+                                        If IsDBNull(dbcDataTable.Rows(introws)(intCols)) = False Then
+                                            If CStr(dbcDataTable.Rows(introws)(intCols)).Contains(".") = False Then
+                                                If mReader.StringTable.ContainsKey((dbcDataTable.Rows(introws)(intCols))) = True Then
+                                                    dbcDataTable.Rows(introws)(intCols) = mReader.StringTable((dbcDataTable.Rows(introws)(intCols)))
+                                                End If
+                                            End If
+                                        End If
+                                    Else
+                                        If IsDBNull(dbcDataTable.Rows(introws)(intCols)) = True Then
+                                            If colTypes(intCols) = "Int32" Then
+                                                dbcDataTable.Rows(introws)(intCols) = 0
+                                            End If
+                                            If colTypes(intCols) = "Long" Then
+                                                dbcDataTable.Rows(introws)(intCols) = 0
+                                            End If
+                                            If colTypes(intCols) = "Float" Then
+                                                dbcDataTable.Rows(introws)(intCols) = 0
+                                            End If
+                                        End If
+
+                                        If CStr(dbcDataTable.Rows(introws)(intCols)) = "NaN" Then
+                                            dbcDataTable.Rows(introws)(intCols) = 0
+                                        End If
+
+                                        If colTypes(intCols) = "Int32" And CStr(dbcDataTable.Rows(introws)(intCols)).Length = 0 Then
+                                            dbcDataTable.Rows(introws)(intCols) = 0
+                                        End If
+                                        If colTypes(intCols) = "Long" And CStr(dbcDataTable.Rows(introws)(intCols)).Length = 0 Then
+                                            dbcDataTable.Rows(introws)(intCols) = 0
+                                        End If
+                                        If CStr(dbcDataTable.Rows(introws)(intCols)).Trim = "" Then
+                                            dbcDataTable.Rows(introws)(intCols) = 0
+                                        End If
+                                    End If
+                                Catch ex As Exception
+                                    Stop
+                                End Try
+                            Next
+                        Catch ex As Exception
+                            Stop
+                        End Try
+                    Next
+
+                    '#######################################################################
+                    '## Last row contains column types
+                    '#######################################################################
+                    dbcDataTable.NewRow()
+                    For intCols As Integer = 0 To dbcDataTable.Columns.Count() - 1
+                        Dim strDataType = colTypes(intCols)
+
+                        If strDataType = "Int32" Then 'Integer
+                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(intCols)) = 1
+                        ElseIf strDataType = "Float" Then 'Float
+                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(intCols)) = 3
+                        ElseIf strDataType = "String" Then 'Float
+                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(intCols)) = 0
+                        Else 'Long
+                            dbcDataTable.Rows(dbcDataTable.Rows.Count() - 1)(CInt(intCols)) = 2
+                        End If
+
+                    Next
+
+                End If
+
             End If
-            Alert("", AlertNewLine.AddCRLF)
-            Else 'No Rows
-            Alert("", AlertNewLine.AddCRLF)
-            End If
-            'Catch ex As Exception
-            '    Alert("Error: " & ex.Message, MaNGOSExtractorrunningAsGui)
-            'End Try
 
             Return dbcDataTable
         End Function
 
-
+        
         ''' <summary>
-        ''' Remove characters that mess with MySQL by escaping them with a leading \
+        '''     Remove characters that mess with MySQL by escaping them with a leading \
         ''' </summary>
         ''' <param name="input"></param>
         ''' <returns></returns>
@@ -986,76 +975,91 @@ Namespace Core
         End Function
 
         Public Enum AlertNewLine
-            NoCRLF = 1
-            AddCRLF = 2
+            NO_CRLF = 1
+            ADD_CRLF = 2
         End Enum
 
-
+        
         ''' <summary>
         ''' Sends a message to either a gui listbox or console
         ''' </summary>
-        ''' <param name="AlertMessage"></param>
-        ''' <param name="resultList"></param>
+        ''' <param name="alertMessage"></param>
+        ''' <param name="lineEnding"></param>
         ''' <remarks></remarks>
-        Public Sub Alert(ByRef AlertMessage As String, ByRef LineEnding As AlertNewLine)
-            If m_runningAsGui = True Then 'running as a Gui App
+        Public Sub Alert(ByRef alertMessage As String, ByRef lineEnding As AlertNewLine)
+            Alert(alertMessage, lineEnding, Alertlist)
+        End Sub
 
-                If Not IsNothing(alertlist) Then
-                    If LineEnding = AlertNewLine.AddCRLF Then
+        ''' <summary>
+        ''' Sends a message to either a gui listbox or console (alertbox control can be overridden).
+        ''' </summary>
+        ''' <param name="alertMessage">The alert message.</param>
+        ''' <param name="lineEnding">The line ending.</param>
+        ''' <param name="thisAlertList">The this alert list.</param>
+        ''' <returns></returns>
+        Public Sub Alert(ByRef alertMessage As String, ByRef lineEnding As AlertNewLine, ByRef thisAlertList As Listbox)
+            If _mRunningAsGui = True Then 'running as a Gui App
+
+                If Not IsNothing(thisAlertList) Then
+
+                    If lineEnding = AlertNewLine.ADD_CRLF Then
 #If _MyType <> "Console" Then
-                        alertlist.Items.Add(AlertMessage)
+                        thisAlertList.Items.Add(alertMessage)
 #Else
-                        alertlist.Items.Add(AlertMessage, AlertMessage)
+                        thisAlertList.Items.Add(alertMessage, alertMessage)
 #End If
-                        alertlist.SelectedIndex = alertlist.Items.Count() - 1
-                        alertlist.SelectedIndex = -1
+                        thisAlertList.SelectedIndex = thisAlertList.Items.Count() - 1
+                        thisAlertList.SelectedIndex = -1
                     Else
-                        Dim Temp As String = alertlist.Items(alertlist.Items.Count() - 1)
-                        AlertMessage = Temp & AlertMessage
+                        Dim temp As String = thisAlertList.Items(thisAlertList.Items.Count() - 1)
+                        alertMessage = temp & alertMessage
 
 
-                        alertlist.Items.RemoveAt(alertlist.Items.Count() - 1)
+                        thisAlertList.Items.RemoveAt(thisAlertList.Items.Count() - 1)
 #If _MyType <> "Console" Then
-                        alertlist.Items.Add(AlertMessage)
+                        thisAlertList.Items.Add(alertMessage)
 #Else
-                        alertlist.Items.Add(AlertMessage, AlertMessage)
+                        thisAlertList.Items.Add(alertMessage, alertMessage)
 #End If
-                        alertlist.SelectedIndex = alertlist.Items.Count() - 1
-                        alertlist.SelectedIndex = -1
+                        thisAlertList.SelectedIndex = thisAlertList.Items.Count() - 1
+                        thisAlertList.SelectedIndex = -1
                     End If
                 End If
             Else 'Running as console
-                If LineEnding = AlertNewLine.AddCRLF Then
-                    Console.WriteLine(AlertMessage)
+                If lineEnding = AlertNewLine.ADD_CRLF Then
+                    Console.WriteLine(alertMessage)
                 Else
-                    Console.Write(AlertMessage)
+                    Console.Write(alertMessage)
                 End If
             End If
         End Sub
 
         ''' <summary>
-        ''' Main Export routine, this reads all the dbc's from the output folder and calls the selected export routines on each one
+        ''' Main Export routine, this reads all the dbc's from the output folder and calls the selected export routines on each
+        ''' one
         ''' </summary>
-        ''' <param name="BaseFolder"></param>
-        ''' <param name="OutputFolder"></param>
-        ''' <param name="ExportCSV"></param>
-        ''' <param name="ExportSQL"></param>
-        ''' <param name="ExportXML"></param>
+        ''' <param name="baseFolder">The base folder.</param>
+        ''' <param name="outputFolder">The output folder.</param>
+        ''' <param name="exportCsv">The export CSV.</param>
+        ''' <param name="exportSql">The export SQL.</param>
+        ''' <param name="exportXml">The export XML.</param>
+        ''' <param name="exportMd">The export md.</param>
+        ''' <param name="exportH">The export H.</param>
         ''' <remarks></remarks>
-        Public Sub ExportDBCFiles(ByRef BaseFolder As String, ByRef OutputFolder As String, ByRef ExportCSV As Boolean, ByRef ExportSQL As Boolean, ByRef ExportXML As Boolean, ByRef ExportMD As Boolean, ByRef ExportH As Boolean)
+        Public Sub ExportDbcFiles(ByRef baseFolder As String, ByRef outputFolder As String, ByRef exportCsv As Boolean, ByRef exportSql As Boolean, ByRef exportXml As Boolean, ByRef exportMd As Boolean, ByRef exportH As Boolean)
             'Now that we have all the DBC's extracted and patched, we need to check the export options and export data
-            If OutputFolder.EndsWith("\") = False Then OutputFolder = OutputFolder & "\"
-            If My.Computer.FileSystem.DirectoryExists(OutputFolder & "DBFilesClient\") = False Then
-                Directory.CreateDirectory(OutputFolder & "DBFilesClient\")
+            If outputFolder.EndsWith("\") = False Then outputFolder = outputFolder & "\"
+            If My.Computer.FileSystem.DirectoryExists(outputFolder & "DBFilesClient\") = False Then
+                Directory.CreateDirectory(outputFolder & "DBFilesClient\")
             End If
             Dim myFolders As DirectoryInfo
-            myFolders = New DirectoryInfo(OutputFolder & "\DBFilesClient")
+            myFolders = New DirectoryInfo(outputFolder & "\DBFilesClient")
 
-            Dim Files() As FileInfo = myFolders.GetFiles("*.DB?")
-            Dim FilelistSorted As New SortedList()
+            Dim files() As FileInfo = myFolders.GetFiles("*.DB?")
+            Dim filelistSorted As New SortedList()
 
-            For Each thisFile As FileInfo In Files
-                FilelistSorted.Add(thisFile.Name, thisFile.Name)
+            For Each thisFile As FileInfo In files
+                filelistSorted.Add(thisFile.Name, thisFile.Name)
 #If _MyType <> "Console" Then
                 Application.DoEvents()
 #Else
@@ -1063,53 +1067,67 @@ Namespace Core
 #End If
             Next
 
+            'Display the progressbar header
+            If exportCsv = True Or exportSql = True Or exportXml = True Or exportMd = True Or exportH = True Then
+                Dim consoleLine As String = "0----+----50----+----100"
+                Dim consoleLineTitle As String = "Warcraft Version v" & FullVersion & " Build " & BuildNo
+                consoleLineTitle = consoleLineTitle.PadRight(57) & consoleLine
+                consoleLine = consoleLine.PadLeft(81)
+                Alert(consoleLineTitle, AlertNewLine.ADD_CRLF, AlertTitle)   'Place this in the Title section so that it remains onscreen
+                Alert(consoleLine, AlertNewLine.ADD_CRLF)               'Place this at the start of the export lines
+                Alert("", AlertNewLine.ADD_CRLF)
+            End If
+
             ' For Each file As FileInfo In Files 'myFolders.GetFiles("*.DB?")
-            For Each fileItem As DictionaryEntry In FilelistSorted 'myFolders.GetFiles("*.DB?")
-                Dim dbcDataTable As New DataTable
+            For Each fileItem As DictionaryEntry In filelistSorted 'myFolders.GetFiles("*.DB?")
+                Dim dbcDataTable As New Data.DataTable
 #If _MyType <> "Console" Then
                 Application.DoEvents()
 #End If
                 'Load the entire DBC into a DataTable to be processed by all exports
-                If ExportCSV = True Or ExportSQL = True Or ExportXML = True Or ExportMD = True Or ExportH = True Then
-                    Alert("", AlertNewLine.AddCRLF)
-                    Alert(fileItem.Value, AlertNewLine.NoCRLF)
-                    dbcDataTable = loadDBCtoDataTable(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value)
-                End If
-
-                'Export to SQL Files
-                If ExportSQL = True Then
-                    Alert("Creating SQL for " & fileItem.Value, AlertNewLine.AddCRLF)
-                    Core.exportSQL(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
-                    Alert("", AlertNewLine.NoCRLF)
-                End If
-
-                'Export to h Files
-                If ExportH = True Then
-                    Alert("Creating .h for " & fileItem.Value, AlertNewLine.AddCRLF)
-                    Core.exportH(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
-                    Alert("", AlertNewLine.NoCRLF)
-                End If
+                If exportCsv = True Or exportSql = True Or exportXml = True Or exportMd = True Or exportH = True Then
+                    'Alert("", AlertNewLine.ADD_CRLF)
+                    'Alert(fileItem.Value, AlertNewLine.NO_CRLF)
+                    dbcDataTable = LoadDbCtoDataTable(outputFolder & "\DBFilesClient" & "\" & fileItem.Value)
+                    If dbcDataTable.Rows.Count() > 0 Then
+                        Alert("  Saving: ", AlertNewLine.NO_CRLF)
 
 
-                'Export to CSV
-                If ExportCSV = True Then
-                    Alert("Creating CSV for " & fileItem.Value, AlertNewLine.AddCRLF)
-                    Core.exportCSV(OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, BaseFolder)
-                    Alert("", AlertNewLine.NoCRLF)
-                End If
+                        'Export to SQL Files
+                        If exportSql = True Then
+                            Alert("SQL ", AlertNewLine.NO_CRLF)
+                            Core.ExportSql(outputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, baseFolder)
+                        End If
 
-                'Export to XML
-                If ExportXML = True Then
-                    Alert("Creating XML for " & fileItem.Value, AlertNewLine.AddCRLF)
-                    Core.exportXML(BaseFolder, OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
-                    Alert("", AlertNewLine.NoCRLF)
-                End If
+                        'Export to h Files
+                        If exportH = True Then
+                            Alert("H ", AlertNewLine.NO_CRLF)
+                            Core.ExportH(outputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, baseFolder)
+                        End If
 
-                'Export to git MD Files
-                If ExportMD = True Then
-                    Alert("Creating MD for " & fileItem.Value, AlertNewLine.AddCRLF)
-                    Core.exportMD(BaseFolder, OutputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
-                    Alert("", AlertNewLine.NoCRLF)
+
+                        'Export to CSV
+                        If exportCsv = True Then
+                            Alert("CSV ", AlertNewLine.NO_CRLF)
+                            Core.ExportCsv(outputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable, baseFolder)
+                        End If
+
+                        'Export to XML
+                        If exportXml = True Then
+                            Alert("XML ", AlertNewLine.NO_CRLF)
+                            Core.ExportXml(baseFolder, outputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
+                        End If
+
+                        'Export to git MD Files
+                        If exportMd = True Then
+                            Alert("MD ", AlertNewLine.NO_CRLF)
+                            Core.ExportMd(baseFolder, outputFolder & "\DBFilesClient" & "\" & fileItem.Value, dbcDataTable)
+                        End If
+
+                        If exportCsv = True Or exportSql = True Or exportXml = True Or exportMd = True Or exportH = True Then
+                            Alert("", AlertNewLine.ADD_CRLF)
+                        End If
+                    End If
                 End If
 #If _MyType <> "Console" Then
                 Application.DoEvents()
@@ -1121,87 +1139,89 @@ Namespace Core
         End Sub
 
         ''' <summary>
-        ''' This function returns the dbc fieldnames xml config file
+        '''     This function returns the dbc fieldnames xml config file
         ''' </summary>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Function returnDBCXMLfilename() As String
-            Dim XMLFilename As String = ""
+        Public Function ReturnDbcxmLfilename() As String
+            Dim xmlFilename As String = ""
             Select Case MajorVersion
                 Case "1"
-                    XMLFilename = "dbc_classic.xml"
+                    xmlFilename = "dbc_classic.xml"
                 Case "2"
-                    XMLFilename = "dbc_tbc.xml"
+                    xmlFilename = "dbc_tbc.xml"
                 Case "3"
-                    XMLFilename = "dbc_wotlk.xml"
+                    xmlFilename = "dbc_wotlk.xml"
                 Case "4"
-                    XMLFilename = "dbc_cata.xml"
+                    xmlFilename = "dbc_cata.xml"
                 Case "5"
-                    XMLFilename = "dbc_mop.xml"
+                    xmlFilename = "dbc_mop.xml"
             End Select
-            Return XMLFilename
+            Return xmlFilename
         End Function
 
+
         ''' <summary>
-        ''' This function returns the mangosCoreVersion based on the exe
+        '''     This function returns the mangosCoreVersion based on the exe
         ''' </summary>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Function returnMangosCoreVersion() As String
-            Dim XMLFilename As String = ""
+        Public Function ReturnMangosCoreVersion() As String
+            Dim xmlFilename As String = ""
             Select Case MajorVersion
                 Case "1"
-                    XMLFilename = "MaNGOSZero"
+                    xmlFilename = "MaNGOSZero"
                 Case "2"
-                    XMLFilename = "MaNGOSOne"
+                    xmlFilename = "MaNGOSOne"
                 Case "3"
-                    XMLFilename = "MaNGOSTwo"
+                    xmlFilename = "MaNGOSTwo"
                 Case "4"
-                    XMLFilename = "MaNGOSThree"
+                    xmlFilename = "MaNGOSThree"
                 Case "5"
-                    XMLFilename = "MaNGOSFour"
+                    xmlFilename = "MaNGOSFour"
             End Select
-            Return XMLFilename
+            Return xmlFilename
         End Function
 
+
         ''' <summary>
-        ''' Loads the fieldnames from the config xml for the specified file and returns a Dictionary of all field names
+        '''     Loads the fieldnames from the config xml for the specified file and returns a Dictionary of all field names
         ''' </summary>
         ''' <param name="sourceFolder"></param>
-        ''' <param name="Tablename"></param>
+        ''' <param name="tablename"></param>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Function LoadXMLDefinitions(ByRef sourceFolder As String, ByRef Tablename As String) As Dictionary(Of Integer, String)
+        Public Function LoadXmlDefinitions(ByRef sourceFolder As String, ByRef tablename As String) As Dictionary(Of Integer, String)
             Dim thisCollection As New Dictionary(Of Integer, String) ' Collection
-            Dim myXMLDoc As New Xml.XmlDocument()
-            Dim XMLFilename As String = ""
-            XMLFilename = returnDBCXMLfilename()
+            Dim myXmlDoc As New XmlDocument()
+            Dim xmlFilename As String = ""
+            xmlFilename = ReturnDbcxmLfilename()
 
-            If My.Computer.FileSystem.FileExists(sourceFolder & "\" & XMLFilename) = True Then
-                myXMLDoc.Load(sourceFolder & "\" & XMLFilename)
+            If My.Computer.FileSystem.FileExists(sourceFolder & "\" & xmlFilename) = True Then
+                myXmlDoc.Load(sourceFolder & "\" & xmlFilename)
                 ' Alert(" External XML Definitions used", AlertNewLine.AddCRLF)
             Else
-                Dim _textStreamReader As StreamReader
-                Dim _assembly As [Assembly]
+                Dim textStreamReader As StreamReader
+                Dim assembly As Assembly
                 Try
-                    _assembly = [Assembly].GetExecutingAssembly()
-                    _textStreamReader = New StreamReader(_assembly.GetManifestResourceStream(_assembly.GetName.Name.ToString() & "." & XMLFilename))
-                    myXMLDoc.Load(_textStreamReader)
+                    assembly = [assembly].GetExecutingAssembly()
+                    textStreamReader = New StreamReader(assembly.GetManifestResourceStream(assembly.GetName.Name.ToString() & "." & xmlFilename))
+                    myXmlDoc.Load(textStreamReader)
                     'Alert(" Internal XML Definitions used", AlertNewLine.AddCRLF)
                 Catch ex As Exception
                 End Try
             End If
 
             Dim maxCols As Integer = 0
-            Dim thisNode As Xml.XmlNode
-            Dim thisFieldCountNode As Xml.XmlNode
-            Dim thisFieldNode As Xml.XmlNode
+            Dim thisNode As XmlNode
+            Dim thisFieldCountNode As XmlNode
+            Dim thisFieldNode As XmlNode
             '<root>
             '    <Files>
             '        <Achievement>
-            thisNode = myXMLDoc.SelectSingleNode("root")
+            thisNode = myXmlDoc.SelectSingleNode("root")
             If Not IsNothing(thisNode) Then thisNode = thisNode.SelectSingleNode("Files")
-            If Not IsNothing(thisNode) Then thisNode = thisNode.SelectSingleNode(Tablename)
+            If Not IsNothing(thisNode) Then thisNode = thisNode.SelectSingleNode(tablename)
 
             If Not IsNothing(thisNode) Then 'found, time to read it
                 thisFieldCountNode = thisNode.SelectSingleNode("fieldcount") '<fieldcount>15</fieldcount>
@@ -1231,79 +1251,8 @@ Namespace Core
         End Function
 
 
-        'Public Function ConvertADT(ByRef ADTfilename As String, ByRef MapFilename As String, ByRef dictMaps As Dictionary(Of Integer, String), ByRef dictAreaTable As Dictionary(Of Integer, Integer), ByRef dictLiquidType As Dictionary(Of Integer, Integer)) As Boolean
-
-        '    If My.Computer.FileSystem.FileExists(ADTfilename) = True Then
-        '        '               ADTReader.Program.Main(ADTfilename)
-
-
-
-
-        '        Dim sqlWriter As New StreamWriter(MapFilename)
-        '        Dim AREAHdr As New StringBuilder("AREA")
-        '        Dim MHGTHdr As New StringBuilder("MHGT")
-        '        Dim MLIQHdr As New StringBuilder("MLIQ")
-        '        Dim HOLEHdr As New StringBuilder
-        '        Dim AREAData As New StringBuilder
-        '        Dim MHGTData As New StringBuilder
-        '        Dim MLIQData As New StringBuilder
-        '        Dim HOLEData As New StringBuilder
-
-        '        'Write Identifier
-        '        sqlWriter.Write("MAPS")
-
-        '        Select Case MajorVersion
-        '            Case "1"
-        '                'Write version No
-        '                sqlWriter.Write("z1.3")
-        '            Case "2"
-        '                'Write version No
-        '                sqlWriter.Write("s1.3")
-        '            Case "3"
-        '                'Write version No
-        '                sqlWriter.Write("v1.3")
-        '            Case "4"
-        '                'Write version No
-        '                sqlWriter.Write("v1.2")
-        '            Case "5"
-        '                'Write version No
-        '                sqlWriter.Write("v1.2")
-        '            Case Else
-        '                sqlWriter.Write("????")
-        '        End Select
-
-        '        'Write Area Offset (always 40)
-        '        sqlWriter.Write(Chr(40) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'Write Areasize
-        '        sqlWriter.Write(Chr(8) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'Write MHGT Offset
-        '        sqlWriter.Write(Chr(48) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'MHGT Size:	4 Bytes		=	10 00 00 00 (16 Bytes)
-        '        sqlWriter.Write(Chr(16) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'MLIQ Offset:	4 Bytes		=	40 02 00 00 (576 Bytes)
-        '        sqlWriter.Write(Chr(64) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'MLIQ Size:	4 Bytes		=	10 00 00 00 (16 Bytes)
-        '        sqlWriter.Write(Chr(16) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'Hole Offset:	4 Bytes		=	50 02 00 00 (591 Bytes)
-        '        sqlWriter.Write(Chr(80) & Chr(0) & Chr(0) & Chr(0))
-
-        '        'Hole Size:	4 Bytes		=	00 02 00 00 (512 Bytes)
-        '        sqlWriter.Write(Chr(0) & Chr(2) & Chr(0) & Chr(0))
-
-        '        'Write Identifier
-        '        sqlWriter.Write(AREAHdr)
-        '        sqlWriter.Write(MHGTHdr)
-        '        sqlWriter.Write(MLIQHdr)
-        '        sqlWriter.Write(HOLEHdr)
-
         ''' <summary>
-        ''' Converts a hex string to a single.
+        '''     Converts a hex string to a single.
         ''' </summary>
         ''' <param name="hexValue">The hex value.</param>
         ''' <returns></returns>
@@ -1314,7 +1263,7 @@ Namespace Core
                 Dim bArray(3) As Byte
 
                 For iInputIndex = 0 To hexValue.Length - 1 Step 2
-                    bArray(iOutputIndex) = Byte.Parse(hexValue.Chars(iInputIndex) & hexValue.Chars(iInputIndex + 1), Globalization.NumberStyles.HexNumber)
+                    bArray(iOutputIndex) = Byte.Parse(hexValue.Chars(iInputIndex) & hexValue.Chars(iInputIndex + 1), NumberStyles.HexNumber)
                     iOutputIndex += 1
                 Next
 
@@ -1326,12 +1275,15 @@ Namespace Core
             End Try
         End Function
 
+
         ''' <summary>
-        ''' Returns a 2 digit hex string.
+        '''     Returns a 2 digit hex string.
         ''' </summary>
         ''' <param name="value">The value.</param>
-        ''' <returns><c>String></c></returns>
-        Private Function myHex(ByVal value As Integer) As String
+        ''' <returns>
+        '''     <c>String></c>
+        ''' </returns>
+        Private Function MyHex(ByVal value As Integer) As String
             Dim retString As String
             retString = Hex(value)
             If retString.Length = 1 Then
@@ -1339,6 +1291,113 @@ Namespace Core
             End If
 
             Return retString
+        End Function
+
+        Private Function ReturnValueType(ByVal hexString As String) As String
+            Dim blnFloat As Boolean = False
+            Dim blnLong As Boolean = False
+            Dim blnInteger As Boolean = False
+
+            If hexString.Length < 8 Then
+                hexString = hexString.PadLeft(8, "0") '& hexString
+            End If
+
+            Dim textFloat As String = ConvertHexToSingle(hexString)
+            If textFloat.Contains("E-") = True Or textFloat.Contains("E+") = True Then
+                blnFloat = False
+            Else
+                blnFloat = True
+            End If
+
+            Dim thisTemp As Long
+            Try
+                thisTemp = "&h" & hexString
+            Catch ex As Exception
+                thisTemp = Nothing
+            End Try
+
+            Dim thisInt As Integer
+            If Integer.TryParse(thisTemp, thisInt) = True Then
+                blnInteger = True
+            End If
+
+            Dim thisLong As Long
+            If Long.TryParse(thisTemp, thisLong) = True Then
+                blnLong = True
+            End If
+
+            'Add some overrides here
+            ' &H00000000 is not a float !
+            If thisTemp = "&h00000000" Then
+                '             TextBox3.Text = "0"
+                Return "Int32"
+            End If
+
+            If blnFloat = True Then
+                '              TextBox3.Text = textFloat
+                Return "Float"
+            ElseIf blnInteger = True Then
+                '               TextBox3.Text = CInt(thisInt)
+                Return "Int32"
+            ElseIf blnLong = True Then
+                '                TextBox3.Text = CLng(thisLong)
+                Return "Long"
+            Else
+                Return "<BANG>"
+            End If
+        End Function
+
+        Private Function ReturnValue(ByVal hexString As String) As String
+            Dim blnFloat As Boolean = False
+            Dim blnLong As Boolean = False
+            Dim blnInteger As Boolean = False
+
+            If hexString.Length < 8 Then
+                hexString = hexString.PadLeft(8, "0") '& hexString
+            End If
+            Dim textFloat As String = ConvertHexToSingle(hexString)
+            If textFloat.Contains("E-") = True Or textFloat.Contains("E+") = True Then
+                blnFloat = False
+            Else
+                blnFloat = True
+            End If
+
+            Dim thisTemp As Long
+            Try
+                thisTemp = "&h" & hexString
+            Catch ex As Exception
+                thisTemp = Nothing
+            End Try
+
+            Dim thisInt As Integer
+            If Integer.TryParse(thisTemp, thisInt) = True Then
+                blnInteger = True
+            End If
+
+            Dim thisLong As Long
+            If Long.TryParse(thisTemp, thisLong) = True Then
+                blnLong = True
+            End If
+
+            'Add some overrides here
+            ' &H00000000 is not a float !
+            If thisTemp = "&h00000000" Then
+                '             TextBox3.Text = "0"
+                Return 0
+            End If
+
+            If blnFloat = True Then
+                Return textFloat
+                '                Return "Float"
+            ElseIf blnInteger = True Then
+                Return CInt(thisInt)
+                '                Return "Int32"
+            ElseIf blnLong = True Then
+                Return CLng(thisLong)
+                '                Return "Long"
+            Else
+                Return 0
+            End If
         End Function
     End Module
 End Namespace

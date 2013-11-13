@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<JustCodeSettings Version="0.0.32" Timestamp="ebcd3fdf-b36d-4e64-9e0e-da2b6b723d77">
+  <IgnoredErrorsAndWarningsSettings xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+    <IgnoredErrorsAndWarnings>
+      <FilePath>
+        <Path>D:\DropBox\Mangos\mangSource\mangSrc\mangosExtractor\Common\MaNGOSExtractorCore.vb</Path>
+        <ProjectFullName>D:\DropBox\Mangos\mangSource\mangSrc\mangosExtractor\AD2\AD2.vbproj</ProjectFullName>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>416</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>21</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>160</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>33</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>119</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>21</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>271</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>312</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>458</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>562</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>21</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>593</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>21</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>615</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>21</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>712</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>741</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>29</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>782</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>810</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>29</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>880</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>37</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>916</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>924</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>33</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>902</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>17</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>1033</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>17</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>1043</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>44</Column>
+          <Text>Unknown method &lt;/C&gt;Add(System.String)&lt;//C&gt; of &lt;/C&gt;System.Collections.SortedList&lt;//C&gt;</Text>
+          <Line>979</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>44</Column>
+          <Text>Unknown method &lt;/C&gt;Add(System.String)&lt;//C&gt; of &lt;/C&gt;System.Collections.SortedList&lt;//C&gt;</Text>
+          <Line>992</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>17</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>1088</Line>
+        </IgnoredElement>
+        <IgnoredElement>
+          <Column>25</Column>
+          <Text>Unknown entity &lt;/C&gt;Application&lt;//C&gt;</Text>
+          <Line>1195</Line>
+        </IgnoredElement>
+      </FilePath>
+    </IgnoredErrorsAndWarnings>
+  </IgnoredErrorsAndWarningsSettings>
+</JustCodeSettings>

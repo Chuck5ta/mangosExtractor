@@ -1,46 +1,44 @@
-﻿Imports System.Collections.Generic
-Imports System.Diagnostics
-Imports System.IO
+﻿Imports System.IO
 Imports System.Security.Cryptography
 Imports System.Text
 
 Namespace Blizzard
     Public Class Patch
         Implements IDisposable
-        Private m_PTCH As PTCH
-        Private m_MD5 As MD5_
+        Private _mPtch As PTCH
+        Private _mMd5 As MD5
         Private m_XFRM As XFRM
-        Private m_BSDIFF40 As BSDIFF40
-        Private m_WDBC As WDBC
+        Private _mBsdiff40 As BSDIFF40
+        '        Private m_WDBC As WDBC
 
         ' BSD0
         Private m_unpackedSize As UInteger
         Private m_compressedDiff As Byte()
 
         ' BSDIFF40
-        Private m_ctrlBlock As Byte(), m_diffBlock As Byte(), m_extraBlock As Byte()
+        Private _mCtrlBlock As Byte(), _mDiffBlock As Byte(), _mExtraBlock As Byte()
 
         Private m_type As String
 
         Public Sub New(patchFile As String)
             Using fs As New FileStream(patchFile, FileMode.Open, FileAccess.Read)
                 Using br As New BinaryReader(fs)
-                    m_PTCH = br.ReadStruct(Of PTCH)()
-                    Debug.Assert(m_PTCH.m_magic.FourCC() = "PTCH")
+                    _mPtch = br.ReadStruct (Of Ptch)()
+                    Debug.Assert(_mPtch.m_magic.FourCc() = "PTCH")
 
-                    m_MD5 = br.ReadStruct(Of MD5_)()
-                    Debug.Assert(m_MD5.m_magic.FourCC() = "MD5_")
+                    _mMd5 = br.ReadStruct (Of MD5)()
+                    Debug.Assert(_mMd5.m_magic.FourCc() = "MD5_")
 
-                    m_XFRM = br.ReadStruct(Of XFRM)()
-                    Debug.Assert(m_XFRM.m_magic.FourCC() = "XFRM")
+                    m_XFRM = br.ReadStruct (Of XFRM)()
+                    Debug.Assert(m_XFRM.m_magic.FourCc() = "XFRM")
 
-                    m_type = m_XFRM.m_type.FourCC()
+                    m_type = m_XFRM.m_type.FourCc()
 
                     Select Case m_type
                         Case "BSD0"
                             m_unpackedSize = br.ReadUInt32()
                             m_compressedDiff = br.ReadRemaining()
-                            BSDIFFParse()
+                            BsdiffParse()
                             Exit Select
                         Case "COPY"
                             m_compressedDiff = br.ReadRemaining()
@@ -57,31 +55,30 @@ Namespace Blizzard
             ' TODO
         End Sub
 
-        Public Sub PrintHeaders(ByRef Filename As String)
-
-            Core.Alert("        Patching: " & Filename, Core.AlertNewLine.AddCRLF) '& " Size=" & m_PTCH.m_patchSize & ", Before=" & m_PTCH.m_sizeBefore & ", After=" & m_PTCH.m_sizeAfter, Core.runningAsGui)
-          End Sub
-
-        Private Sub BSDIFFParseHeader(br As BinaryReader)
-            m_BSDIFF40 = br.ReadStruct(Of BSDIFF40)()
-
-            Debug.Assert(m_BSDIFF40.m_magic.FourCC() = "BSDIFF40")
-
-            Debug.Assert(m_BSDIFF40.m_ctrlBlockSize > 0 AndAlso m_BSDIFF40.m_diffBlockSize > 0)
-
-            Debug.Assert(m_BSDIFF40.m_sizeAfter = m_PTCH.m_sizeAfter)
+        Public Sub PrintHeaders(ByRef filename As String)
+            Core.Alert("        Patching: " & filename, Core.AlertNewLine.ADD_CRLF) '& " Size=" & m_PTCH.m_patchSize & ", Before=" & m_PTCH.m_sizeBefore & ", After=" & m_PTCH.m_sizeAfter, Core.runningAsGui)
         End Sub
 
-        Private Sub BSDIFFParse()
+        Private Sub BsdiffParseHeader(br As BinaryReader)
+            _mBsdiff40 = br.ReadStruct (Of BSDIFF40)()
+
+            Debug.Assert(_mBsdiff40.m_magic.FourCC() = "BSDIFF40")
+
+            Debug.Assert(_mBsdiff40.m_ctrlBlockSize > 0 AndAlso _mBsdiff40.m_diffBlockSize > 0)
+
+            Debug.Assert(_mBsdiff40.m_sizeAfter = _mPtch.m_sizeAfter)
+        End Sub
+
+        Private Sub BsdiffParse()
             Dim diff() As Byte = RLEUnpack()
 
             Using ms As New MemoryStream(diff)
                 Using br As New BinaryReader(ms)
                     BSDIFFParseHeader(br)
 
-                    m_ctrlBlock = br.ReadBytes(CInt(m_BSDIFF40.m_ctrlBlockSize))
-                    m_diffBlock = br.ReadBytes(CInt(m_BSDIFF40.m_diffBlockSize))
-                    m_extraBlock = br.ReadRemaining()
+                    _mCtrlBlock = br.ReadBytes(CInt(_mBsdiff40.m_ctrlBlockSize))
+                    _mDiffBlock = br.ReadBytes(CInt(_mBsdiff40.m_diffBlockSize))
+                    _mExtraBlock = br.ReadRemaining()
                 End Using
             End Using
         End Sub
@@ -117,37 +114,37 @@ Namespace Blizzard
 
             If validate Then
                 ' pre-validate
-                Debug.Assert(oldFile.Length = m_PTCH.m_sizeBefore)
+                Debug.Assert(oldFile.Length = _mPtch.m_sizeBefore)
                 Dim md5 As New MD5CryptoServiceProvider()
                 Dim hash() As Byte = md5.ComputeHash(oldFile)
 
                 Try
-                    hash.Compare(m_MD5.m_md5Before)
+                    hash.Compare(_mMd5.m_md5Before)
                 Catch
-                    Core.Alert("Input MD5 mismatch!: " & hash.Compare(m_MD5.m_md5Before), Core.AlertNewLine.AddCRLF)
+                    Core.Alert("Input MD5 mismatch!: " & hash.Compare(_mMd5.m_md5Before), Core.AlertNewLine.ADD_CRLF)
                 End Try
             End If
 
-            Dim ctrlBlock As BinaryReader = m_ctrlBlock.ToBinaryReader()
-            Dim diffBlock As BinaryReader = m_diffBlock.ToBinaryReader()
-            Dim extraBlock As BinaryReader = m_extraBlock.ToBinaryReader()
+            Dim ctrlBlock As BinaryReader = _mCtrlBlock.ToBinaryReader()
+            Dim diffBlock As BinaryReader = _mDiffBlock.ToBinaryReader()
+            Dim extraBlock As BinaryReader = _mExtraBlock.ToBinaryReader()
 
-            Dim newFile As Byte() = New Byte(m_PTCH.m_sizeAfter - 1) {}
+            Dim newFile As Byte() = New Byte(_mPtch.m_sizeAfter - 1) {}
 
             Dim newFileOffset As Integer = 0, oldFileOffset As Integer = 0
 
-            While newFileOffset < m_PTCH.m_sizeAfter
+            While newFileOffset < _mPtch.m_sizeAfter
                 Dim diffChunkSize As Integer = ctrlBlock.ReadInt32()
 
                 Dim extraChunkSize As Integer = ctrlBlock.ReadInt32()
                 Dim extraOffset As UInteger = ctrlBlock.ReadUInt32()
 
-                Debug.Assert(newFileOffset + diffChunkSize <= m_PTCH.m_sizeAfter)
+                Debug.Assert(newFileOffset + diffChunkSize <= _mPtch.m_sizeAfter)
 
                 newFile.SetBytes(diffBlock.ReadBytes(diffChunkSize), newFileOffset)
 
                 For i As Integer = 0 To diffChunkSize - 1
-                    If (oldFileOffset + i >= 0) AndAlso (oldFileOffset + i < m_PTCH.m_sizeBefore) Then
+                    If (oldFileOffset + i >= 0) AndAlso (oldFileOffset + i < _mPtch.m_sizeBefore) Then
                         Dim nb As UInt32 = newFile(newFileOffset + i)
                         Dim ob As UInt32 = oldFile(oldFileOffset + i)
                         newFile(newFileOffset + i) = CByte((nb + ob) Mod 256)
@@ -157,7 +154,7 @@ Namespace Blizzard
                 newFileOffset += diffChunkSize
                 oldFileOffset += diffChunkSize
 
-                Debug.Assert(newFileOffset + extraChunkSize <= m_PTCH.m_sizeAfter)
+                Debug.Assert(newFileOffset + extraChunkSize <= _mPtch.m_sizeAfter)
 
                 newFile.SetBytes(extraBlock.ReadBytes(extraChunkSize), newFileOffset)
 
@@ -171,14 +168,14 @@ Namespace Blizzard
 
             If validate Then
                 ' post-validate
-                Debug.Assert(newFile.Length = m_PTCH.m_sizeAfter)
+                Debug.Assert(newFile.Length = _mPtch.m_sizeAfter)
                 Dim md5 As New MD5CryptoServiceProvider()
                 Dim hash() As Byte = md5.ComputeHash(newFile)
 
                 Try
-                    hash.Compare(m_MD5.m_md5After)
+                    hash.Compare(_mMd5.m_md5After)
                 Catch
-                    Core.Alert("Output MD5 mismatch!: " & hash.Compare(m_MD5.m_md5After), Core.AlertNewLine.AddCRLF)
+                    Core.Alert("Output MD5 mismatch!: " & hash.Compare(_mMd5.m_md5After), Core.AlertNewLine.ADD_CRLF)
                 End Try
             End If
 
@@ -186,12 +183,11 @@ Namespace Blizzard
             File.WriteAllBytes(newFileName, newFile)
         End Sub
 
-        Private Shared Function xsign(i As UInteger) As Long
+        Private Shared Function Xsign(i As UInteger) As Long
             If (i And &H80000000UI) <> 0 Then
                 Return (CLng(&H80000000UI) - i)
             End If
             Return i
         End Function
-
     End Class
 End Namespace
